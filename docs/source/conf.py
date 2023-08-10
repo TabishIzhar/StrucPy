@@ -17,15 +17,14 @@ release = '1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
+autoapi_dirs = ['../../StrucPy']
 extensions = ['sphinx.ext.autosectionlabel',
               'autoapi.extension']        #'sphinx.ext.autodoc',
 
 autosectionlabel_prefix_document = True
 templates_path = ['_templates']
 exclude_patterns = []
-autoapi_dirs = ['../../StrucPy']
-autoapi_options =  [ 'members' :True , 'undoc-members': False, 'private-members': False, 'show-inheritance': True, 'show-module-summary': True, 'special-members': False, 'imported-members': False, ]
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
