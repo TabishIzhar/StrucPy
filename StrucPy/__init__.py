@@ -1,1 +1,1 @@
-from . import RCFA
+from StrucPy import RCFA
