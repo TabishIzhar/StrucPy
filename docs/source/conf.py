@@ -17,7 +17,10 @@ release = '1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
 autoapi_dirs = ['../../StrucPy']
+autoapi_options =  [ 'members', 'show-inheritance', 'show-module-summary']
+
 extensions = ['sphinx.ext.autosectionlabel',
               'autoapi.extension']        #'sphinx.ext.autodoc',
 
