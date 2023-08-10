@@ -25,6 +25,7 @@ autosectionlabel_prefix_document = True
 templates_path = ['_templates']
 exclude_patterns = []
 autoapi_dirs = ['../../StrucPy']
+autoapi_options =  [ 'members', 'show-inheritance', 'show-module-summary', 'special-members', 'imported-members', ]
 
 
 # -- Options for HTML output -------------------------------------------------
