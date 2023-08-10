@@ -26,10 +26,9 @@ templates_path = ['_templates']
 exclude_patterns = []
 autoapi_dirs = ['../../StrucPy']
 autoapi_options =  [ 'members', 
-                    'show-inheritance', 
-                    'show-module-summary', 
-                    'special-members', 
-                    'imported-members', ]
+                    'inherited-members', 
+                    'show-inheritance',
+                    'show-module-summary' ]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
