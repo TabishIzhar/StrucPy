@@ -25,10 +25,7 @@ autosectionlabel_prefix_document = True
 templates_path = ['_templates']
 exclude_patterns = []
 autoapi_dirs = ['../../StrucPy']
-autoapi_options =  [ 'members', 
-                    'inherited-members', 
-                    'show-inheritance',
-                    'show-module-summary' ]
+autoapi_options =  [ 'members' :True , 'undoc-members': False, 'private-members': False, 'show-inheritance': True, 'show-module-summary': True, 'special-members': False, 'imported-members': False, ]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
