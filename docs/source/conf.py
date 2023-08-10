@@ -18,12 +18,13 @@ release = '1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.autosectionlabel']
+extensions = ['sphinx.ext.autosectionlabel',
+              'autoapi.extension']        #'sphinx.ext.autodoc',
+
 autosectionlabel_prefix_document = True
 templates_path = ['_templates']
 exclude_patterns = []
-
+autoapi_dirs = ['../../StrucPy']
 
 
 # -- Options for HTML output -------------------------------------------------
