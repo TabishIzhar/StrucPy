@@ -5,7 +5,7 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../StrucPy'))       # ../../ two directories up RCFA.py
+sys.path.insert(0, os.path.abspath('../../'))       # ../../ two directories up RCFA.py
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -18,11 +18,12 @@ release = '1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-autoapi_dirs = ['../../StrucPy']
-autoapi_options =  [ 'members', 'show-inheritance', 'show-module-summary']
+# autoapi_dirs = ['../../StrucPy']
+# autoapi_options =  [ 'members', 'show-inheritance', 'show-module-summary']
 
-extensions = ['sphinx.ext.autosectionlabel',
-              'autoapi.extension']        #'sphinx.ext.autodoc',
+extensions = ['sphinx.ext.autodoc',
+
+              'sphinx.ext.autosectionlabel']                     # 'autoapi.extension',
 
 autosectionlabel_prefix_document = True
 templates_path = ['_templates']

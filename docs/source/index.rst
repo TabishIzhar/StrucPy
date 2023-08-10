@@ -13,6 +13,7 @@ Welcome to StrucPy's documentation!
    Overview of StrucPy
    usage
    Input Parameters
+   modules
    Examples
 
 
