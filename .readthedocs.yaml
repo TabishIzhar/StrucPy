@@ -33,7 +33,3 @@ sphinx:
 python:
    install:
    - requirements: docs/requirements.txt
-
-[project]
-name = "StrucPy"
-authors = [{name = "Tabish Izhar", email = "tizhar@iul.ac.in"}]
