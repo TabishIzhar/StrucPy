@@ -1,8 +1,8 @@
 Usage
 =====
 
-Installation
-------------
+Installation (Not Launched Yet)
+-------------------------------
 
 To use StrucPy, first install it using pip:
 

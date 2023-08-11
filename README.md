@@ -91,7 +91,7 @@ For proper visualization of graphs and models.
 
 -----------------------------------------------------------------------------------------------------------
 
-## Installation
+## Installation (Not Launched Yet)
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install StrucPy.
 
