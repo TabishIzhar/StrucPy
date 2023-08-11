@@ -75,6 +75,11 @@ Gravity loads acting along y-axis.
 
 ![Alt text](./CordSys.JPG)
 
+------------------------------------------------------------------------------------------------------------
+
+## StrucPy Documentation
+
+https://strucpy.readthedocs.io/
 
 ------------------------------------------------------------------------------------------------------------
 ## Preferred Integrated Development Environment (IDE)
