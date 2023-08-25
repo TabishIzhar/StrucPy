@@ -22,7 +22,10 @@ class RCF():
     
     :param boundcondition: A handle to the :class:`StrucPy.RCFA.RCF` that detects the nodes/joints condition of reinforced concrete frame i.e. types of supports (fixed, hinged etc.) and joints conditions. Check :ref:`InputExample:Boundary Conditions` for more details.
     :type boundcondition: DataFrame
-    
+
+    :param framegen: A handle to the :class:`StrucPy.RCFA.RCF` that detects the number of bays and total length of required reinforced concrete frame along x- axis, z-axis and height along y-axis. Check :ref:`InputExample:framegen` for more details.
+    :type framegen: DataFrame    
+
     :param forcesnodal: A handle to the :class:`StrucPy.RCFA.RCF` that detects the nodes/joints forces of reinforced concrete frame, defaults to None (No nodel forces or moments). Check :ref:`InputExample:Nodal Forces Details` for more details.
     :type forcesnodal: DataFrame, optional
     
@@ -57,8 +60,90 @@ class RCF():
     :type col_stablity_index: Float/Int, optional
     """
         
-    def __init__(self, nodes_details, member_details, boundrycondition, forcesnodal=None, slab_details=None, load_combo=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, point_loads= None, col_stablity_index= 0.04):
+    def __init__(self, nodes_details, member_details, boundrycondition, framegen= None,forcesnodal=None, slab_details=None, load_combo=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, point_loads= None, col_stablity_index= 0.04):
         
+        if framegen is not None:
+            if not isinstance(framegen, pd.DataFrame):
+                raise TypeError ("Type of 'framegen' must be DataFrame")    
+
+            if len(framegen.columns) is not 2:
+                raise Exception ("framegen must have 2 columns: ['Number of bays', 'Total Length']")
+            
+            if len(framegen.index) is not 3:
+                raise Exception ("framegen must have 3 rows: ['Along length (x-axis) ', 'Along height (y-axis)'], 'Along width (z-axis)']")            
+
+            lx= framegen.iat[0,1]
+            ly= framegen.iat[1,1]
+            lz= framegen.iat[2,1]
+            nx= framegen.iat[0,0]
+            ny= framegen.iat[1,0]
+            nz= framegen.iat[2,0]
+            x = np.linspace(0, lx, nx+1)
+            y = np.linspace(0, ly, ny+1)
+            z = np.linspace(0, lz, nz+1)
+
+
+            zv,xv = np.meshgrid(z,x)
+
+            xv= xv.flatten()
+            zv= zv.flatten()
+
+            zvv, yv = np.meshgrid(zv, y)
+
+            xvv,yvv=  np.meshgrid( xv, y)
+
+            cord_array= np.vstack((xvv.flatten(), yv.flatten(), zvv.flatten())).T
+            nodes_details= pd.DataFrame(cord_array, columns= ['x','y','z'], index = [i for i in range (1,len (cord_array)+1)])
+
+
+            total_members= (((nx* (nz+1))+ ((nx+1)* nz)) * ny) + (((nx+1)* (nz+1) * ny))
+            mem_cords= np.empty([total_members,2])
+            member_number= 0
+
+            for ka in range (1,len(y)):
+                y_val= y[ka]
+                new_nodes1= nodes_details[nodes_details.y.isin([y_val])]
+                for ia in x:
+                    new_node2= new_nodes1[new_nodes1.x.isin([ia])]
+                    node_ids= new_node2.index.to_list()
+                    for ja in range (len(new_node2)-1):
+                        mem_cords[member_number, 0] = node_ids[ja]
+                        mem_cords[member_number, 1] = node_ids[ja+1]
+                        member_number = member_number+1
+
+                for ia in z:
+                    new_node2= new_nodes1[new_nodes1.z.isin([ia])]
+                    node_ids= new_node2.index.to_list()
+                    for ja in range (len(new_node2)-1):
+                        mem_cords[member_number, 0] = node_ids[ja]
+                        mem_cords[member_number, 1] = node_ids[ja+1]
+                        member_number = member_number+1
+
+            nodes_details_usable= nodes_details.sort_values(by=['x', 'z']).copy()
+            node_ids= nodes_details_usable.index.to_list()
+
+            for ka in x:
+                new_nodes1= nodes_details[nodes_details.x.isin([ka])]
+                for ia in z:    
+                    new_node2= new_nodes1[new_nodes1.z.isin([ia])]
+                    node_ids= new_node2.index.to_list()
+                    for ja in range (len(new_node2)-1):
+                        mem_cords[member_number, 0] = node_ids[ja]
+                        mem_cords[member_number, 1] = node_ids[ja+1]
+                        member_number = member_number+1       
+
+            mem_cords= mem_cords.astype(np.int64)
+            member_details= pd.DataFrame(mem_cords, columns= ['Node1','Node2'], index = [i for i in range (1,len (mem_cords)+1)])
+
+            member_details[['b', 'd']]= 500
+            member_details[['xUDL', 'yUDL', 'zUDL']]= 0
+            base_nodes= nodes_details[nodes_details.y.isin([y[0]])]
+
+            boundrycondition_array= np.zeros ([len(base_nodes), 6])
+            boundrycondition= pd.DataFrame(boundrycondition_array, columns= ["x","y","z","thetax","thetay","thetaz"], index = base_nodes.index)
+
+
+
         if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundrycondition]):
             raise TypeError ("Type of the argument must be DataFrame")
 
@@ -145,8 +230,10 @@ class RCF():
                     forcesnodal.sort_index(inplace=True)
                     self.__forcesnodal.loc[forcesnodal.index]= forcesnodal.loc[:]
             else:
-                raise Exception ("These nodes in nodal forces DataFrame does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
+                raise Exception ("These nodes in nodal forces DataFrame does not exist: ",  [i for i, val in enumerate(self.__fv_index) if not val] )
 
+        if len(boundrycondition.columns) != 6:
+            raise Exception ("The boundary condition dataframe must contain 6 columns representing each degree of freedom in 3D space i.e. 'Trans x', 'Trans y', 'Trans z', 'Rotation x', 'Rotation y', 'Rotation z'.  ")
 
         self.__bc_index = boundrycondition.index.isin(nodes_details.index)
 
@@ -3275,6 +3362,140 @@ class RCF():
         self.load_combo.fillna(0,inplace=True)
         self.__Analysis_performed= False
 
+    def changeFrame(self, member, node= None):
+        """This non returing function of :class:`StrucPy.RCFA.RCF` object performs changes by deleting members and nodes of Reinforced Concrete Frame. It changes the frame model. 
+        :ref:`InputExample:changeFrame` for more details.
+
+        :param member: Member ID/ID's which has be deleted from the frame.
+        :type member: int/list
+
+        :param node: node ID/ID's which has be deleted from the frame.
+        :type node: int/list
+        :return: None
+        """
+
+        if not isinstance(member, (int, list)):
+            raise Exception ("The member ID provided is of wrong type. It can only be int,float or list ")
+        
+        if isinstance(member, int):
+            member_nodes_check= self.__member_details.index.isin([member])
+
+            if member_nodes_check.any():
+                self.__member_details.drop([member], inplace= True)
+            else:
+                raise Exception (f"These {member} member ID does not exist. " )
+            
+        if isinstance(member, list):
+
+            member_nodes_check=    pd.Series(member).isin(self.__member_details.index)
+
+            if member_nodes_check.all():
+                self.__member_details.drop(member, inplace= True)
+
+            else:
+                raise Exception ("These nodes does not exist in member_details: ",  [i for i, val in enumerate(member_nodes_check) if not val] )
+          
+
+
+        if node is not None:
+            if not isinstance(node, (int, list)):
+                raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+
+        if isinstance(node, int):
+            nodes_check= self.__nodes_details.index.isin([node])
+
+            if nodes_check.any():
+                member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin([node])
+
+                if member_nodes_check.any().any():
+                    raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+                
+                self.__nodes_details.drop([node], inplace= True)
+            else:
+                raise Exception (f"The {node} node ID does not exist. " )
+            
+        if isinstance(member, list):
+            nodes_check=    pd.Series(node).isin(self.__nodes_details.index)
+
+            if nodes_check.all():
+                member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin(node)
+
+                if member_nodes_check.any().any():
+                    raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+
+                self.__nodes_details.drop(node, inplace= True)
+            else:
+                raise Exception ("These nodes does not exist in details: ",  [i for i, val in enumerate(nodes_check) if not val] ) 
+            
+        n1= self.__member_details.iloc[:,0:2].to_numpy()
+        orphan_nodes_status = self.__nodes_details.index.isin(n1.flatten())
+        
+        orphan_nodes= [i for i, val in enumerate(orphan_nodes_status) if not val]
+
+        self.__nodes_details.drop(orphan_nodes, inplace= True)
+
+        self.__PreP_status= False
+        self.__Analysis_performed= False
+
+    def changeBoundcond(self, bound_conditions):
+        """This non returing function of :class:`StrucPy.RCFA.RCF` object performs changes in boundary condition of Reinforced Concrete Frame. It completely  replaces the boundary existing boundary consition with the passed one. :ref:`InputExample:changeBoundcond` for more details.
+
+        :param bound_conditions: Details of the new boundary condition to be used in analysis.
+        :type bound_conditions: Dataframe
+        :return: None
+        """
+
+        if not isinstance(bound_conditions, pd.DataFrame):
+            raise Exception ("The bound_conditions provided is of wrong type. It can only be dataframe ")
+        
+        if len(bound_conditions.columns) != 6:
+            raise Exception ("The boundary condition dataframe must contain 6 columns representing each degree of freedom in 3D space i.e. 'Trans x', 'Trans y', 'Trans z', 'Rotation x', 'Rotation y', 'Rotation z'. ")
+        
+        self.__bc_index = bound_conditions.index.isin(self.__nodes_details.index)
+
+        if self.__bc_index.all():
+            if len(bound_conditions)==self.node_list:
+                self.__boundrycondition= bound_conditions.sort_index()
+                self.__boundrycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
+            elif len(bound_conditions)!=self.node_list:             
+                self.__boundrycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
+                bound_conditions.sort_index(inplace=True)
+                self.__boundrycondition.loc[bound_conditions.index]= bound_conditions.loc[:]
+        else:
+            raise Exception ("These nodes in boundary condition does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
+
+        self.__PreP_status= False
+        self.__Analysis_performed= False
+
+    def modelND(self):
+        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` object presenting the nodes of the reinforced concrete frame. It a parameter passed by user or generated by agrumunet `framegen`.
+         
+        :param: None
+        :return: A *DataFrame* of :class:`StrucPy.RCFA.RCF` objects.
+        :rtype: *DataFrame* 
+        """  
+
+        return (self.__nodes_details)
+    
+    def modelMD(self):
+        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` object presenting the members of the reinforced concrete frame. It a parameter passed by user or generated by agrumunet `framegen`.
+         
+        :param: None
+        :return: A *DataFrame* of :class:`StrucPy.RCFA.RCF` objects.
+        :rtype: *DataFrame* 
+        """  
+
+        return (self.__member_details)
+    
+    def modelBCD(self):
+        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` object presenting the boundary condition of the reinforced concrete frame. It a parameter passed by user or generated by agrumunet `framegen`.
+         
+        :param: None
+        :return: A *DataFrame* of :class:`StrucPy.RCFA.RCF` objects.
+        :rtype: *DataFrame* 
+        """  
+
+        return (self.__boundrycondition)
 
 class RCFenv():
     """
@@ -3321,8 +3542,87 @@ class RCFenv():
     :type col_stablity_index: Float/Int, optional
     """
 
-    def __init__(self, nodes_details, member_details, boundrycondition, load_combo, forcesnodal=None, slab_details=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, col_stablity_index= 0.04):
+    def __init__(self, nodes_details, member_details, boundrycondition, load_combo, framegen= None, forcesnodal=None, slab_details=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, col_stablity_index= 0.04):
 
+        if framegen is not None:
+            if not isinstance(framegen, pd.DataFrame):
+                raise TypeError ("Type of 'framegen' must be DataFrame")    
+
+            if len(framegen.columns) is not 2:
+                raise Exception ("framegen must have 2 columns: ['Number of bays', 'Total Length']")
+            
+            if len(framegen.index) is not 3:
+                raise Exception ("framegen must have 3 rows: ['Along length (x-axis) ', 'Along height (y-axis)'], 'Along width (z-axis)']")            
+
+            lx= framegen.iat[0,1]
+            ly= framegen.iat[1,1]
+            lz= framegen.iat[2,1]
+            nx= framegen.iat[0,0]
+            ny= framegen.iat[1,0]
+            nz= framegen.iat[2,0]
+            x = np.linspace(0, lx, nx+1)
+            y = np.linspace(0, ly, ny+1)
+            z = np.linspace(0, lz, nz+1)
+
+
+            zv,xv = np.meshgrid(z,x)
+
+            xv= xv.flatten()
+            zv= zv.flatten()
+
+            zvv, yv = np.meshgrid(zv, y)
+
+            xvv,yvv=  np.meshgrid( xv, y)
+
+            cord_array= np.vstack((xvv.flatten(), yv.flatten(), zvv.flatten())).T
+            nodes_details= pd.DataFrame(cord_array, columns= ['x','y','z'], index = [i for i in range (1,len (cord_array)+1)])
+
+
+            total_members= (((nx* (nz+1))+ ((nx+1)* nz)) * ny) + (((nx+1)* (nz+1) * ny))
+            mem_cords= np.empty([total_members,2])
+            member_number= 0
+
+            for ka in range (1,len(y)):
+                y_val= y[ka]
+                new_nodes1= nodes_details[nodes_details.y.isin([y_val])]
+                for ia in x:
+                    new_node2= new_nodes1[new_nodes1.x.isin([ia])]
+                    node_ids= new_node2.index.to_list()
+                    for ja in range (len(new_node2)-1):
+                        mem_cords[member_number, 0] = node_ids[ja]
+                        mem_cords[member_number, 1] = node_ids[ja+1]
+                        member_number = member_number+1
+
+                for ia in z:
+                    new_node2= new_nodes1[new_nodes1.z.isin([ia])]
+                    node_ids= new_node2.index.to_list()
+                    for ja in range (len(new_node2)-1):
+                        mem_cords[member_number, 0] = node_ids[ja]
+                        mem_cords[member_number, 1] = node_ids[ja+1]
+                        member_number = member_number+1
+
+            nodes_details_usable= nodes_details.sort_values(by=['x', 'z']).copy()
+            node_ids= nodes_details_usable.index.to_list()
+
+            for ka in x:
+                new_nodes1= nodes_details[nodes_details.x.isin([ka])]
+                for ia in z:    
+                    new_node2= new_nodes1[new_nodes1.z.isin([ia])]
+                    node_ids= new_node2.index.to_list()
+                    for ja in range (len(new_node2)-1):
+                        mem_cords[member_number, 0] = node_ids[ja]
+                        mem_cords[member_number, 1] = node_ids[ja+1]
+                        member_number = member_number+1       
+            
+            mem_cords= mem_cords.astype(np.int64)
+            member_details= pd.DataFrame(mem_cords, columns= ['Node1','Node2'], index = [i for i in range (1,len (mem_cords)+1)])
+
+            member_details[['b', 'd']]= 500
+            member_details[['xUDL', 'yUDL', 'zUDL']]= 0
+            base_nodes= nodes_details[nodes_details.y.isin([y[0]])]
+
+            boundrycondition_array= np.zeros ([len(base_nodes), 6])
+            boundrycondition= pd.DataFrame(boundrycondition_array, columns= ["x","y","z","thetax","thetay","thetaz"], index = base_nodes.index)
 
         if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundrycondition]):
             raise TypeError ("Type of the argument must be DataFrame")
@@ -3407,9 +3707,11 @@ class RCFenv():
                     forcesnodal.sort_index(inplace=True)
                     self.forcesnodal.loc[forcesnodal.index]= forcesnodal.loc[:]
             else:
-                raise Exception ("These nodes in nodal forces DataFrame does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
+                raise Exception ("These nodes in nodal forces DataFrame does not exist: ",  [i for i, val in enumerate(self.__fv_index) if not val] )
 
-
+        if len(boundrycondition.columns) != 6:
+            raise Exception ("The boundary condition dataframe must contain 6 columns representing each degree of freedom in 3D space i.e. 'Trans x', 'Trans y', 'Trans z', 'Rotation x', 'Rotation y', 'Rotation z'. ")
+        
         self.__bc_index = boundrycondition.index.isin(nodes_details.index)
 
         if self.__bc_index.all():

@@ -4,7 +4,7 @@ In order to perform structural analysis of reinforced concrete element/frames. F
 
 Nodes Details
 ----------------
-Nodes details of the reinforced concrete model is a **Mandatory Parameter** and should be passed in *DataFrame*. It represents the joints of the reinforced concrete frame. The DataFrame must contain three columns. Nodes details columns are **positional arguments**.
+`nodes_details` is a **Mandatory Parameter**, represents Nodes details of the reinforced concrete model and should be passed in *DataFrame*. It gives the joints detail of the reinforced concrete frame. The DataFrame must contain three columns. Nodes details columns are **positional arguments**.
 The *index* of the Dataframe represents *Name of the Node*, it must be a *positive integer*.
 
 * 1st Column must contain x-Coordinate of the nodes in **meters (m)**.
@@ -22,7 +22,7 @@ Note: The order of the nodes doesn't affect the results.
 
 Member Details
 --------------
-Member details of the reinforced concrete model is a **Mandatory Parameter** and should be passed in *DataFrame*. It represents the beams and columns of the reinforced concrete frame. The DataFrame **must** contain *seven columns*. Columns of member details are **positional arguments**.
+`member_details` is a **Mandatory Parameter**, represents member details of the reinforced concrete model and should be passed in *DataFrame*. It presents beams and columns of the reinforced concrete frame. The DataFrame **must** contain *seven columns*. Columns of member details are **positional arguments**.
 
 
 * 1st and 2nd Column must contain node number (node ID) between which member is connected.
@@ -48,7 +48,7 @@ Member details of the reinforced concrete model is a **Mandatory Parameter** and
 
 Boundary Conditions 
 --------------------------
-Boundary conditions of the reinforced concrete model is a **Mandatory Parameter** and should be passed in *DataFrame*. It represents the joints condition of the reinforced concrete frame. The DataFrame **must contain the base joints** (joint connection between frame and ground). 
+`boundarycondition` is a **Mandatory Parameter**, represents boundary condition of the reinforced concrete model and should be passed in *DataFrame*. It presents the joints condition of the reinforced concrete frame. The DataFrame **must contain the base joints** (joint connection between frame and ground). 
 
 Rest other joints are optional. Boundary conditions have 6 columns representing each degree of freedom (Translation in x, Translation in y, Translation in z, Rotation in x (thetax), Rotation in y (thetay), Rotation in z (thetaz)).
 
@@ -65,11 +65,42 @@ Note: The order of the nodes doesn't affect the results.
 .. figure::  ./images/BC.png
    :align: center
 
+
+------------------------
+
+Generate Frame
+--------------------------
+`framegen` of the reinforced concrete model is an **Optional Parameter**. It provides an information to automatically generate the reinforced concrete frame and should be passed in *DataFrame*. Dataframe of Nodal Forces must contain 2 columns representing number of bays and total length along bays in x, y and z direction. 
+
+
+* 1st Row of DataFrame: 
+
+   * Number of bay in x- direction (Length of RC Frame) - 1st Column of DataFrame
+   * Total distance of bay in x- direction (Total Length of RC Frame) - 2nd Column of DataFrame
+
+* 2nd Row of DataFrame: 
+
+   * Number of bay in y- direction (Height of RC Frame) - 1st Column of DataFrame
+   * Total distance of bay in y- direction (Total Height of RC Frame) - 2nd Column of DataFrame
+
+* 3rd Row of DataFrame: 
+
+   * Number of bay in z- direction (Width of RC Frame) - 1st Column of DataFrame
+   * Total distance of bay in z- direction (Total width of RC Frame) - 2nd Column of DataFrame
+
+**Default is None i.e. No auto generation**
+
+`framegen` rows and columns are **positional arguments**.
+
+.. figure::  ./images/framegen.png
+   :align: center
+
+
 ------------------------
 
 Nodal Forces Details
 --------------------------
-Nodal Forces of the reinforced concrete model is an **Optional Parameter**. It represents the forces at the joints of the reinforced concrete frame and should be passed in *DataFrame*. Dataframe of Nodal Forces must contain 6 columns representing force's and moment's in every direction. Nodal forces can only be point forces or moments. 
+`forcesnodal` is an **Optional Parameter**, represents the forces at the joints of the reinforced concrete frame and should be passed in *DataFrame*. Dataframe of Nodal Forces must contain 6 columns representing force's and moment's in every direction. Nodal forces can only be point forces or moments. 
 
 **Forces applied on joints are in Global Coordinate System**.
 
@@ -94,15 +125,15 @@ Note: The order of the nodes doesn't affect the results.
 
 Slab Details
 ------------
-Slab details of the reinforced concrete model is an **Optional Parameter**. It represents the floor load of the reinforced concrete frame and should be passed in *DataFrame*. Dataframe of slab details contains atleast 8 columns representing:
+`slab_details` is an **Optional Parameter**, which represents the floor load of the reinforced concrete frame and should be passed in *DataFrame*. Dataframe of slab details contains 8 columns representing:
 
 Node 1 to node 4 are the four corners of a trapezoidal slab/floor.
 
-* "Node 1" (*Mandatory Parameter*)- 1st Column of DataFrame  (It should be the node index/name)  
-* "Node 2" (*Mandatory Parameter*) - 2nd Column of DataFrame  (It should be the node index/name) 
-* "Node 3" (*Mandatory Parameter*) - 3rd Column of DataFrame  (It should be the node index/name)
-* "Node 4" (*Mandatory Parameter*) - 4th Column of DataFrame   (It should be the node index/name)
-* Thickness of slab or floor in millimeter (mm) (*Mandatory Parameter*) - 5th Column of DataFrame
+* "Node 1" - 1st Column of DataFrame (It should be the node index/id)
+* "Node 2" - 2nd Column of DataFrame (It should be the node index/id) 
+* "Node 3" - 3rd Column of DataFrame (It should be the node index/id)
+* "Node 4" - 4th Column of DataFrame (It should be the node index/id)
+* Thickness of slab or floor in millimeter (mm) - 5th Column of DataFrame
 * "Floor Finish Load" (*Should be passed 0 if no load*) - 6th Column of DataFrame
 * "Live Load" (*Should be passed 0 if no load*) - 7th Column of DataFrame
 * "Water Proofing Load" (*Should be passed 0 if no load*) - 8th Column of DataFrame 
@@ -121,7 +152,7 @@ Note: The order of the slab/floor doesn't affect the results.
 
 Load Combination Details
 ------------------------
-Load combination details of the reinforced concrete model is an **Optional Parameter**. It represents the combination of different loads with load factors acting on the reinforced concrete frame and should be passed in *DataFrame*. Dataframe of load combination may contain up to 6 columns representing:
+`load_combo` is an **Optional Parameter**,s represents the combination of different loads with load factors acting on the reinforced concrete frame and should be passed in *DataFrame*. Dataframe of load combination may contain up to 6 columns representing:
 
 * "Dead Load" - 1st Column of DataFrame
 * "Live Load" - 2nd Column of DataFrame
@@ -145,7 +176,12 @@ Note: Only one load combination is considered RCF class. To check for different 
 
 Seismic Definition
 ------------------------
-Seismic definition of the reinforced concrete model is an **Optional Parameter**.  It is required when user want to perform the Equivalent Static Seismic Analysis and should be passed in *DataFrame*.  Dataframe of seismic definition may contain up to 6 columns representing:
+`seismic_def` is a parameter for Seismic definition of the reinforced concrete model and is an **Optional Parameter**.  It is required when user want to perform the Equivalent Static Seismic Analysis and should be passed in *DataFrame* or *numerical value*.  
+
+**Dataframe** should be used when seismic definition is as per IS1893:2016.
+**Value of Time Period** in seconds must be passed when seismic analysis is to be done with some other standard codes.
+
+Dataframe of seismic definition may contain up to 6 columns representing:
 
 * "Seismic Zone Factor (Z)" - 1st Column of DataFrame
 * "Response Reduction Factor (R)" - 2nd Column of DataFrame
@@ -160,15 +196,13 @@ Seismic Definition columns are **positional arguments**.
 
 Note: Soil Type is needed only for seismic analysis as per IS1893:2016. If user wishes to use some other code, values of "z", "I", "R" and "Sag" must be provided 
 
-.. figure::  ./images/FV.png
+.. figure::  ./images/seismicD.png
    :align: center
-   Example of Seismic Definition as per IS1893
 ------------------------
-
 
 Material Properties
 ------------------------
-Material properties of the members of reinforced concrete model is an **Optional Parameter**. It is required when user want to use some other material or concrete with different properties, should be passed as *DataFrame*.  Dataframe of material properties may contain up to 9 columns representing:
+`properties` represents material properties of the members of reinforced concrete model and is an **Optional Parameter**. It is required when user want to use some other material or concrete with different properties, should be passed as *DataFrame*.  Dataframe of material properties may contain up to 9 columns representing:
 
 * "Type" - 1st Column of DataFrame
 * "Material" - 2nd Column of DataFrame
@@ -188,21 +222,23 @@ Material properties of the members of reinforced concrete model is an **Optional
 * Thermal Coefficient (alpha) = 
 * Modulus of Rigidity (G -kN/m2) = E/ (2*(1+mu))
 * Critical Damping = 0.05 (5%)
-* Type= "All"- Properties assigned to every member (Beam, Column and Slabs)
-        "Beam"- Properties assigned to only beams
-        "Column"- Properties assigned to only columns
-        "Slab"- Properties assigned to only slabs
+* Type: "All"- Properties assigned to every member (Beam, Column and Slabs)
 
-Note: If succeeding "Type" arguments overrides previous type. Example: if "Beam" follows after "All" type, Beams properties will be modified.
+      * "Beam"- Properties assigned to only beams 
+      * "Column"- Properties assigned to only columns
+      * "Slab"- Properties assigned to only slabs
+
+Note: Succeeding "Type" arguments overrides previous type. If "Beam" follows after "All" type, Beams properties will be modified.
 
 Material Properties columns are **positional arguments**.
 
+.. figure::  ./images/properties.png
+   :align: center
 ------------------------
-
 
 Concrete Grade
 ------------------------
-Concrete Grade of the members of reinforced concrete model is an **Optional Parameter**. It is required when user want to *only change the Grade of Concrete of the default concrete grade i.e. M25*.  The value of Young modulus, modulus of rigidity is calculated as per the formula mentioned in **Material Properties**. 
+`grade_conc` represents concrete grade of the members of reinforced concrete model and is an **Optional Parameter**. It is required when user want to *only change the Grade of Concrete of the default concrete grade i.e. M25*.  The value of Young modulus, modulus of rigidity is calculated as per the formula mentioned in **Material Properties**. 
 
 **Default is None (Concrete M25- Compressive Strength of 25 N/mm2).**
 
@@ -211,7 +247,7 @@ Concrete Grade of the members of reinforced concrete model is an **Optional Para
 
 Self Weight
 ------------------------
-Self Weight of the reinforced concrete model is an **Optional Parameter** but should be passed as Boolean. It will determine if self weight of the members has to be included in analysis or not. 
+`self_weight` represents self weight of the members of reinforced concrete model and is an **Optional Parameter**. It should be passed as Boolean operator. It determines, if self weight of the members has to be included in analysis or not. 
 
 *Default is True (Self Weight will be considered)*. 
  
@@ -220,29 +256,35 @@ Self Weight of the reinforced concrete model is an **Optional Parameter** but sh
 
 Infillwall
 ------------------------
-Infillwall of the reinforced concrete model is an **Optional Parameter**. It will determine if Infillwall will be considered while calculating Time Period during seismic analysis or not and should be passed as *Boolean*. 
+`infillwall` represents infillwall of the reinforced concrete model and is an **Optional Parameter**. It determines if infillwall will be considered while calculating Time Period during seismic analysis or not and should be passed as *Boolean*. 
 
 **Default is False (Infillwall will not be considered)**. 
 
-Note: Infillwall argument has to be only provided when Seismic analysis is being done as per IS1893:2016 Part 1.
+**Note:** Infillwall argument has to be only provided when Seismic analysis is being done as per IS1893:2016 Part 1.
 
 ------------------------
 
 
 Autoflooring
 ------------------------
-Autoflooring of the reinforced concrete model is an **Optional Parameter**. Sometimes its very tedious task to apply slab/floor loads on a very huge structure. Autoflooring argument, automatically apply slab/floor load, making easy for the user to manipulate and should be passed as *Boolean*.
+`autoflooring` is an **Optional Parameter** and helps greatly in reducing the work load of inputting every slab detail on a reinforced concrete frame. Autoflooring argument, automatically apply slab/floor load, making easy for the user to manipulate and should be passed as *Boolean* operator.
 
 **Default is False (Autoflooring will not be considered)**. 
 
-Note: If Autoflooring is True. Default values are- Thickness of Floor is 150 millimeters (mmm), Floor Finish Load (FF): 1 kN/m2, Live Load (LL): 3 kN/m2, "Waterproofing Load ": 0 kN/m2. It can further be change using class method `Strucpy.RCFA.RCF.changeFL()`.
+If Autoflooring is True. Default values are- 
 
+* Thickness of Floor is 150 millimeters (mmm)
+* Floor Finish Load (FF): 1 kN/m2
+* Live Load (LL): 3 kN/m2
+* "Waterproofing Load ": 0 kN/m2. 
+
+**Note**: It can further be changed using class method `Strucpy.RCFA.RCF.changeFL()` as per the requirement.
 ------------------------
 
 
 Point Loads
 ------------------------
-Point Loads can be applied on the member or members of reinforced concrete model. It is an **Optional Parameter**. It is required when user want to place point loads on a member, should be passed as *DataFrame*.  Dataframe of point loads contains up to 3 columns representing:
+`point_loads` represents point loads acting on the member or members of reinforced concrete model. It is an **Optional Parameter**. It is required when user want to place point loads on a member, should be passed as *DataFrame*.  Dataframe of point loads contains up to 3 columns representing:
 
 * "Load in (kN)" - 1st Column of DataFrame.
 * "Direction" i.e (x, y or z) in local coordinate system - 2nd Column of DataFrame.
@@ -257,11 +299,13 @@ Note: It's capable of handling multiple point loads.
 
 Point loads columns are **positional arguments**.
 
+.. figure::  ./images/pL.png
+   :align: center
 ------------------------
 
 Stability Index
 ------------------------
-Stability Index of a reinforced concrete member/frame is an **Optional Parameter**. Stability index value helps in classifying columns as sway or non-sway. Its value can be passed as per the user requirement. 
+`col_stablity_index` represents stability index of a reinforced concrete member/frame and is an **Optional Parameter**. Stability index value helps in classifying columns as sway or non-sway. Its value can be passed as per the user requirement. 
 
 **Default value is 0.04. (IS456:2000)**. 
 
