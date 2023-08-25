@@ -61,7 +61,7 @@ class RCF():
     """
         
     def __init__(self, nodes_details, member_details, boundrycondition, framegen= None,forcesnodal=None, slab_details=None, load_combo=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, point_loads= None, col_stablity_index= 0.04):
-        
+        print ("Hello")
         if framegen is not None:
             if not isinstance(framegen, pd.DataFrame):
                 raise TypeError ("Type of 'framegen' must be DataFrame")    
