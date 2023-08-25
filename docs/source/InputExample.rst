@@ -33,6 +33,7 @@ Member Details
 * 7th Column represents uniformly distributed load (udl) on member in **Local z direction** in **kilonewton per square meter (kN/m2)**.
 
 **Note:** 
+
 * The order of the members doesn't affect the results.
 * It's capable of taking rectangular and circular cross-sections input.
 * For **rectangular cross-section**, both 3rd and 4th columns representing (b and d) must be defined.
@@ -279,6 +280,7 @@ If Autoflooring is True. Default values are-
 * "Waterproofing Load ": 0 kN/m2. 
 
 **Note**: It can further be changed using class method `Strucpy.RCFA.RCF.changeFL()` as per the requirement.
+
 ------------------------
 
 
