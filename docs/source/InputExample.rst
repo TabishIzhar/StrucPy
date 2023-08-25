@@ -96,7 +96,6 @@ Generate Frame
 .. figure::  ./images/framegen.png
    :align: center
 
-
 ------------------------
 
 Nodal Forces Details
@@ -199,6 +198,7 @@ Note: Soil Type is needed only for seismic analysis as per IS1893:2016. If user 
 
 .. figure::  ./images/seismicD.png
    :align: center
+
 ------------------------
 
 Material Properties
@@ -235,6 +235,7 @@ Material Properties columns are **positional arguments**.
 
 .. figure::  ./images/properties.png
    :align: center
+
 ------------------------
 
 Concrete Grade
@@ -303,6 +304,7 @@ Point loads columns are **positional arguments**.
 
 .. figure::  ./images/pL.png
    :align: center
+
 ------------------------
 
 Stability Index
