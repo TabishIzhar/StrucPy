@@ -66,10 +66,10 @@ class RCF():
             if not isinstance(framegen, pd.DataFrame):
                 raise TypeError ("Type of 'framegen' must be DataFrame")    
 
-            if len(framegen.columns) is not 2:
+            if len(framegen.columns) != 2:
                 raise Exception ("framegen must have 2 columns: ['Number of bays', 'Total Length']")
             
-            if len(framegen.index) is not 3:
+            if len(framegen.index) != 3:
                 raise Exception ("framegen must have 3 rows: ['Along length (x-axis) ', 'Along height (y-axis)'], 'Along width (z-axis)']")            
 
             lx= framegen.iat[0,1]
@@ -2463,18 +2463,21 @@ class RCF():
         nodetext= self.__nodes_details.index.to_numpy()
         xxx= self.__cords_member_order.to_numpy()
         tmm=len(xxx)
-        Model = go.Figure()
+        fig1= go.Figure()
+        fig2= go.Figure()
+        fig3= go.Figure()
         
-        Model.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="top right"))
+        fig1.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="top right"))
         kk=0
         mem_index= self.member_list
-        anno=[]
+        anno_member=[]
+        anno_floor=[]
         for i in range(0,tmm,2):
             
-            Model.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines',      
+            fig2.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines+text',      
                 line=dict(
                         color="black",                # set color to an array/list of desired values
-                        width=10)))
+                        width=10),))
 
             ax= xxx[i,2].item() 
             bx= xxx[i+1,2].item() 
@@ -2482,7 +2485,6 @@ class RCF():
             by= xxx[i+1,0].item() 
             az= xxx[i,1].item() 
             bz= xxx[i+1,1].item() 
-
 
             x_annotate=((ax+bx)/2)+0.1
             y_annotate=((ay+by)/2)+0.1
@@ -2500,9 +2502,10 @@ class RCF():
                 size=8
             ),)
 
-            anno.append(a1)
+            anno_member.append(a1)
             kk= kk+1
         
+
         if self.__slabload_there==1:
             sb= self.__slab_details
             for i in sb.index:
@@ -2513,7 +2516,7 @@ class RCF():
                 node= self.__nodes_details.loc[[n1,n2,n3,n4]]
                 z= np.empty([5,5]) 
                 z[:,:]= node['y'].values[0]   
-                Model.add_trace(go.Surface(x=node['z'], y=node['x'], z=z,opacity=0.2,showscale=False))        
+                fig3.add_trace(go.Surface(x=node['z'], y=node['x'], z=z,opacity=0.2,showscale=False))        
 
                 x_an=node["z"].mean()
                 y_an=node["x"].mean()
@@ -2530,25 +2533,77 @@ class RCF():
                     size=8
                 ),)
                 
-                anno.append(a2)
-                #floor_anno.append(a2)
+                anno_floor.append(a2)
 
+        f1 = [trace for trace in fig1.select_traces()]
+        f2 = [trace for trace in fig2.select_traces()]
+        f3 = [trace for trace in fig3.select_traces()]
+
+        button1= [True for i in range(1, (len(f1)+ len(f2)+ len(f3)))]
+        button2= [True if i > 0 and i < (len(f1)+ len(f2)) else False for i in range(len(f1)+ len(f2)+ len(f3))]
+        button3= [True if i > 0 else False for i in range(len(f1)+ len(f2)+ len(f3))]
+
+        anno1= 10
+
+        Model=go.Figure(data=f1+f2+f3)
 
         Model.update_layout(
             scene=dict(
                 xaxis=dict(type="-"),
                 yaxis=dict(type="-"),
-                zaxis=dict(type="-"),
-                annotations=anno),)
+                zaxis=dict(type="-"),))
+
+        Model.update_layout(scene = dict(
+                    xaxis_title=' ',
+                    yaxis_title=' ',
+                    zaxis_title=' '),)
 
         Model.update_layout(scene = dict(xaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
                                    yaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
                                    zaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
              ))
+  
+        Model.update_layout(
+            updatemenus=[
+                dict(
+                    type = "buttons",
+                    direction = "left",
+                    buttons=list([
+                        dict(
+                            args=[{'visible': button1},
+                                  {"title": "RC Model",
+                                    "annotations": []}],
+                            label="RC Model",
+                            method="update",
+                        ),
+                        dict(
+                            args=[{'visible': button2},
+                                  {"title": "Members ID's",
+                                    "annotations": anno_member}],
+                            label="Member Ids",
+                            method="update"
+                        ),
+                        dict(
+                            args=[{'visible': button3},
+                                  {"title": "Floor ID's",
+                                    "annotations": anno_floor}],
+                            label="Floors IDs",
+                            method="update"
+                        )
+                    ]),
+                    pad={"r": 10, "t": 10},
+                    showactive=True,
+                    x=0.11,
+                    xanchor="left",
+                    y=1.1,
+                    yanchor="middle"
+                ),
+            ]
+        )
 
-        Model.update_layout(height=800, width=1600)
+        Model.update_layout(height=800, width=800)
 
-        return (Model)
+        return (f1,f2,f3, Model, anno_member, anno_floor)
 
 
 
@@ -3552,10 +3607,10 @@ class RCFenv():
             if not isinstance(framegen, pd.DataFrame):
                 raise TypeError ("Type of 'framegen' must be DataFrame")    
 
-            if len(framegen.columns) is not 2:
+            if len(framegen.columns) != 2:
                 raise Exception ("framegen must have 2 columns: ['Number of bays', 'Total Length']")
             
-            if len(framegen.index) is not 3:
+            if len(framegen.index) != 3:
                 raise Exception ("framegen must have 3 rows: ['Along length (x-axis) ', 'Along height (y-axis)'], 'Along width (z-axis)']")            
 
             lx= framegen.iat[0,1]
