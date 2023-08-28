@@ -6,10 +6,10 @@ import plotly
 
 
 # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-member_details= pd.read_excel('./InputFiles/Example4.xlsx', 'members', header = 0, index_col=0)
-nodes_details= pd.read_excel('./InputFiles/Example4.xlsx', 'nodes', header = 0, index_col=0)
-boundcond = pd.read_excel('./InputFiles/Example4.xlsx', 'boundary', header = 0, index_col=0)
-load_combo= pd.read_excel('./InputFiles/Example4.xlsx', 'load_combinations', header = 0, index_col=0)
+member_details= pd.read_excel('./InputFiles/Testfile4.xlsx', 'members', header = 0, index_col=0)
+nodes_details= pd.read_excel('./InputFiles/Testfile4.xlsx', 'nodes', header = 0, index_col=0)
+boundcond = pd.read_excel('./InputFiles/Testfile4.xlsx', 'boundary', header = 0, index_col=0)
+load_combo= pd.read_excel('./InputFiles/Testfile4.xlsx', 'load_combinations', header = 0, index_col=0)
 
 # Check "boundcond" for defining different boundary condition
 

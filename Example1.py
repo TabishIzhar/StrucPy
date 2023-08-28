@@ -4,12 +4,12 @@ from StrucPy.RCFA import RCF
 import pandas as pd
 import plotly
 
-framegen=  pd.read_excel('./Example1.xlsx', 'framegen', header = 0, index_col=0)
-seismic_defination= pd.read_excel('./Example1.xlsx', 'Seismic_Defination', header = 0, index_col=0)
-load_combo= pd.read_excel('./Example1.xlsx', 'load_combinations', header = 0, index_col=0)
+framegen=  pd.read_excel('./InputFiles/Example1.xlsx', 'framegen', header = 0, index_col=0)
+seismic_defination= pd.read_excel('./InputFiles/Example1.xlsx', 'Seismic_Defination', header = 0, index_col=0)
+load_combo= pd.read_excel('./InputFiles/Example1.xlsx', 'load_combinations', header = 0, index_col=0)
 
 # Creating RC frame object for analysis
-r1= RCF(nodes_details = None,member_details= None,boundarycondition= None,framegen= framegen, seismic_def= seismic_defination, load_combo= load_combo,  autoflooring= True )
+r1= RCF(nodes_details = None,member_details= None,boundrycondition= None,framegen= framegen, seismic_def= seismic_defination, load_combo= load_combo,  autoflooring= True )
 
 #Pre processing the model
 r1.preP()

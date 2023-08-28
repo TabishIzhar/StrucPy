@@ -11,7 +11,7 @@ from ._arrangeCal import *
 @ray.remote
 class _RCFforenvelop():
         
-    def __init__(self, nodes_details, member_details, boundrycondition, forcesnodal=None, slab_details=None, load_combo=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, col_stablity_index= 0.04):
+    def __init__(self, nodes_details, member_details, boundarycondition, forcesnodal=None, slab_details=None, load_combo=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, col_stablity_index= 0.04):
         
         
         self.__nodes_details= nodes_details.copy()
@@ -24,7 +24,7 @@ class _RCFforenvelop():
 
         
         self.__forcesnodal = forcesnodal.copy()
-        self.__boundrycondition= boundrycondition.copy()
+        self.__boundarycondition= boundarycondition.copy()
 
 
         self.autoflooring= autoflooring
@@ -1336,7 +1336,7 @@ class _RCFforenvelop():
     def __solution(self):           
          
         forcevec= np.transpose(self.__forcesnodal.to_numpy().flatten())
-        dispvec= np.transpose(self.__boundrycondition.to_numpy().flatten())  
+        dispvec= np.transpose(self.__boundarycondition.to_numpy().flatten())  
         global_forces= self.__global_forces
         eq1= np.array([])    # Vector to find forces
         eq2= np.array([])    # Vector to find displacements
@@ -1854,7 +1854,7 @@ class _RCFforenvelop():
         self.__nodes_details= self.joint_details.copy()
         self.__member_details= self.mem_details.copy()     
         self.__forcesnodal= self.nodalforces.copy()  
-        self.__boundrycondition= self.boundcond.copy() 
+        self.__boundarycondition= self.boundcond.copy() 
 
     def preP(self):
 
@@ -1878,7 +1878,7 @@ class _RCFforenvelop():
         self.joint_details= self.__nodes_details.copy()
         self.mem_details= self.__member_details.copy()     
         self.nodalforces= self.__forcesnodal.copy()  
-        self.boundcond= self.__boundrycondition.copy() 
+        self.boundcond= self.__boundarycondition.copy() 
    
     def RCanalysis(self):
 

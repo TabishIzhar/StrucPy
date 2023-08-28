@@ -60,7 +60,7 @@ class RCF():
     :type col_stablity_index: Float/Int, optional
     """
         
-    def __init__(self, nodes_details, member_details, boundrycondition, framegen= None,forcesnodal=None, slab_details=None, load_combo=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, point_loads= None, col_stablity_index= 0.04):
+    def __init__(self, nodes_details, member_details, boundarycondition, framegen= None,forcesnodal=None, slab_details=None, load_combo=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, point_loads= None, col_stablity_index= 0.04):
         
         if framegen is not None:
             if not isinstance(framegen, pd.DataFrame):
@@ -139,12 +139,12 @@ class RCF():
             member_details[['xUDL', 'yUDL', 'zUDL']]= 0
             base_nodes= nodes_details[nodes_details.y.isin([y[0]])]
 
-            boundrycondition_array= np.zeros ([len(base_nodes), 6])
-            boundrycondition= pd.DataFrame(boundrycondition_array, columns= ["x","y","z","thetax","thetay","thetaz"], index = base_nodes.index)
+            boundarycondition_array= np.zeros ([len(base_nodes), 6])
+            boundarycondition= pd.DataFrame(boundarycondition_array, columns= ["x","y","z","thetax","thetay","thetaz"], index = base_nodes.index)
 
 
 
-        if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundrycondition]):
+        if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundarycondition]):
             raise TypeError ("Type of the argument must be DataFrame")
 
         __member_columns= ['Node1', 'Node2', 'b', 'd','xUDL', 'yUDL', 'zUDL']
@@ -232,19 +232,19 @@ class RCF():
             else:
                 raise Exception ("These nodes in nodal forces DataFrame does not exist: ",  [i for i, val in enumerate(self.__fv_index) if not val] )
 
-        if len(boundrycondition.columns) != 6:
+        if len(boundarycondition.columns) != 6:
             raise Exception ("The boundary condition dataframe must contain 6 columns representing each degree of freedom in 3D space i.e. 'Trans x', 'Trans y', 'Trans z', 'Rotation x', 'Rotation y', 'Rotation z'.  ")
 
-        self.__bc_index = boundrycondition.index.isin(nodes_details.index)
+        self.__bc_index = boundarycondition.index.isin(nodes_details.index)
 
         if self.__bc_index.all():
-            if len(boundrycondition)==self.node_list:
-                self.__boundrycondition= boundrycondition.sort_index()
-                self.__boundrycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
-            elif len(boundrycondition)!=self.node_list:             
-                self.__boundrycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
-                boundrycondition.sort_index(inplace=True)
-                self.__boundrycondition.loc[boundrycondition.index]= boundrycondition.loc[:]
+            if len(boundarycondition)==self.node_list:
+                self.__boundarycondition= boundarycondition.sort_index()
+                self.__boundarycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
+            elif len(boundarycondition)!=self.node_list:             
+                self.__boundarycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
+                boundarycondition.sort_index(inplace=True)
+                self.__boundarycondition.loc[boundarycondition.index]= boundarycondition.loc[:]
         else:
             raise Exception ("These nodes in boundary condition does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
 
@@ -453,7 +453,7 @@ class RCF():
         self.__ds= []
         self.__mdd= self.__member_details.copy()
         self.__ndd= self.__nodes_details.copy()
-        self._bcd= self.__boundrycondition.copy()
+        self._bcd= self.__boundarycondition.copy()
 
     def __nodes_arrangement_for_members(self):                
         total_members= self.tm
@@ -1732,7 +1732,7 @@ class RCF():
         # ***This function caluclates the GLobal Forces and Displacements***
          
         forcevec= np.transpose(self.__forcesnodal.to_numpy().flatten())
-        dispvec= np.transpose(self.__boundrycondition.to_numpy().flatten())  
+        dispvec= np.transpose(self.__boundarycondition.to_numpy().flatten())  
         global_forces= self.__global_forces
         
         eq1= np.array([])    # Vector to find forces
@@ -2350,7 +2350,7 @@ class RCF():
         self.__nodes_details= self.joint_details.copy()
         self.__member_details= self.mem_details.copy()     
         self.__forcesnodal= self.nodalforces.copy()  
-        self.__boundrycondition= self.boundcond.copy() 
+        self.__boundarycondition= self.boundcond.copy() 
         
         
 
@@ -2384,7 +2384,7 @@ class RCF():
         self.joint_details= self.__nodes_details.copy()
         self.mem_details= self.__member_details.copy()     
         self.nodalforces= self.__forcesnodal.copy()  
-        self.boundcond= self.__boundrycondition.copy()
+        self.boundcond= self.__boundarycondition.copy()
 
 
 
@@ -2466,18 +2466,25 @@ class RCF():
         fig1= go.Figure()
         fig2= go.Figure()
         fig3= go.Figure()
-        
+        fig4= go.Figure()
+        fig5= go.Figure()
+
         fig1.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="top right"))
         kk=0
         mem_index= self.member_list
-        anno_member=[]
-        anno_floor=[]
+
+        mtcs = np.array([[],[],[]]).T
+
+        ftcs = np.array([[],[],[]]).T
+        
+        mem_text=[]
+        floor_text=[]
+
         for i in range(0,tmm,2):
-            
             fig2.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines+text',      
                 line=dict(
                         color="black",                # set color to an array/list of desired values
-                        width=10),))
+                        width=10),name= f"member {kk+1}" ))
 
             ax= xxx[i,2].item() 
             bx= xxx[i+1,2].item() 
@@ -2486,29 +2493,23 @@ class RCF():
             az= xxx[i,1].item() 
             bz= xxx[i+1,1].item() 
 
-            x_annotate=((ax+bx)/2)+0.1
-            y_annotate=((ay+by)/2)+0.1
-            z_annotate=((az+bz)/2)+0.1
+            x_anno=((ax+bx)/2)
+            y_anno=((ay+by)/2)
+            z_anno=((az+bz)/2)
             
-            #(x_annotate, y_annotate, z_annotate)
-            a1= dict(
-            showarrow=False,
-            x=x_annotate,
-            y=y_annotate,
-            z=z_annotate,
-            text=f"Member {mem_index[kk]}",
-            font=dict(
-                color="black",
-                size=8
-            ),)
+            mtc = np.array([[x_anno],[y_anno],[z_anno]]).T
 
-            anno_member.append(a1)
+            mtcs= np.vstack((mtcs,mtc))
+            mem_text.append(f"{mem_index[kk]}")
             kk= kk+1
-        
 
+        fig4.add_trace(go.Scatter3d(x=mtcs[:,0],y=mtcs[:,1],z=mtcs[:,2],mode='text', text=mem_text,textposition="middle right"))
+
+        
         if self.__slabload_there==1:
             sb= self.__slab_details
             for i in sb.index:
+
                 n1= sb.at[i,'Node1']
                 n2= sb.at[i,'Node2']
                 n3= sb.at[i,'Node3']
@@ -2520,32 +2521,31 @@ class RCF():
 
                 x_an=node["z"].mean()
                 y_an=node["x"].mean()
-                z_an=node["y"].mean() +0.5
+                z_an=node["y"].mean()
             
-                a2= dict(
-                    showarrow=False,
-                    x=x_an,
-                    y=y_an,
-                    z=z_an,
-                    text=f"Floor {i}",
-                    font=dict(
-                    color="black",
-                    size=8
-                ),)
+                ftc = np.array([[x_an],[y_an],[z_an]]).T
+
+                ftcs= np.vstack((ftcs,ftc))
+                floor_text.append(f"Floor {i}")
                 
-                anno_floor.append(a2)
+
+        fig5.add_trace(go.Scatter3d(x=ftcs[:,0],y=ftcs[:,1],z=ftcs[:,2],mode='text', text=floor_text,textposition="top center"))                
+
 
         f1 = [trace for trace in fig1.select_traces()]
         f2 = [trace for trace in fig2.select_traces()]
         f3 = [trace for trace in fig3.select_traces()]
+        f4 = [trace for trace in fig4.select_traces()]
+        f5 = [trace for trace in fig5.select_traces()]
 
-        button1= [True for i in range(1, (len(f1)+ len(f2)+ len(f3)))]
-        button2= [True if i > 0 and i < (len(f1)+ len(f2)) else False for i in range(len(f1)+ len(f2)+ len(f3))]
-        button3= [True if i > 0 else False for i in range(len(f1)+ len(f2)+ len(f3))]
+        button1= [True if i < (len(f1)+ len(f2)+ len(f3)) else False for i in range((len(f1)+ len(f2)+ len(f3) + len(f4)+ len(f5) ))]
 
-        anno1= 10
+        button2= [False for _ in range(len(f1))] + [True for _ in range(len(f2))] + [False for _ in range(len(f3))] + [True for _ in range(len(f4))] + [False for _ in range(len(f5))]
 
-        Model=go.Figure(data=f1+f2+f3)
+        button3= [False for _ in range(len(f1))] + [True for _ in range(len(f2))] + [True for _ in range(len(f3))] + [False for _ in range(len(f4))] + [True for _ in range(len(f5))]
+
+
+        Model=go.Figure(data=f1+f2+f3+f4+f5)
 
         Model.update_layout(
             scene=dict(
@@ -2570,23 +2570,17 @@ class RCF():
                     direction = "left",
                     buttons=list([
                         dict(
-                            args=[{'visible': button1},
-                                  {"title": "RC Model",
-                                    "annotations": []}],
+                            args=[{'visible': button1},],
                             label="RC Model",
                             method="update",
                         ),
                         dict(
-                            args=[{'visible': button2},
-                                  {"title": "Members ID's",
-                                    "annotations": anno_member}],
+                            args=[{'visible': button2},],
                             label="Member Ids",
                             method="update"
                         ),
                         dict(
-                            args=[{'visible': button3},
-                                  {"title": "Floor ID's",
-                                    "annotations": anno_floor}],
+                            args=[{'visible': button3},],
                             label="Floors IDs",
                             method="update"
                         )
@@ -2601,9 +2595,9 @@ class RCF():
             ]
         )
 
-        Model.update_layout(height=800, width=800)
+        Model.update_layout(height=800, width=1500)
 
-        return (f1,f2,f3, Model, anno_member, anno_floor)
+        return (Model)
 
 
 
@@ -3512,12 +3506,12 @@ class RCF():
 
         if self.__bc_index.all():
             if len(bound_conditions)==self.node_list:
-                self.__boundrycondition= bound_conditions.sort_index()
-                self.__boundrycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
+                self.__boundarycondition= bound_conditions.sort_index()
+                self.__boundarycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
             elif len(bound_conditions)!=self.node_list:             
-                self.__boundrycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
+                self.__boundarycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
                 bound_conditions.sort_index(inplace=True)
-                self.__boundrycondition.loc[bound_conditions.index]= bound_conditions.loc[:]
+                self.__boundarycondition.loc[bound_conditions.index]= bound_conditions.loc[:]
         else:
             raise Exception ("These nodes in boundary condition does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
 
@@ -3601,7 +3595,7 @@ class RCFenv():
     :type col_stablity_index: Float/Int, optional
     """
 
-    def __init__(self, nodes_details, member_details, boundrycondition, load_combo, framegen= None, forcesnodal=None, slab_details=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, col_stablity_index= 0.04):
+    def __init__(self, nodes_details, member_details, boundarycondition, load_combo, framegen= None, forcesnodal=None, slab_details=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, col_stablity_index= 0.04):
 
         if framegen is not None:
             if not isinstance(framegen, pd.DataFrame):
@@ -3680,10 +3674,10 @@ class RCFenv():
             member_details[['xUDL', 'yUDL', 'zUDL']]= 0
             base_nodes= nodes_details[nodes_details.y.isin([y[0]])]
 
-            boundrycondition_array= np.zeros ([len(base_nodes), 6])
-            boundrycondition= pd.DataFrame(boundrycondition_array, columns= ["x","y","z","thetax","thetay","thetaz"], index = base_nodes.index)
+            boundarycondition_array= np.zeros ([len(base_nodes), 6])
+            boundarycondition= pd.DataFrame(boundarycondition_array, columns= ["x","y","z","thetax","thetay","thetaz"], index = base_nodes.index)
 
-        if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundrycondition]):
+        if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundarycondition]):
             raise TypeError ("Type of the argument must be DataFrame")
 
         if len(member_details.columns)<7:
@@ -3768,19 +3762,19 @@ class RCFenv():
             else:
                 raise Exception ("These nodes in nodal forces DataFrame does not exist: ",  [i for i, val in enumerate(self.__fv_index) if not val] )
 
-        if len(boundrycondition.columns) != 6:
+        if len(boundarycondition.columns) != 6:
             raise Exception ("The boundary condition dataframe must contain 6 columns representing each degree of freedom in 3D space i.e. 'Trans x', 'Trans y', 'Trans z', 'Rotation x', 'Rotation y', 'Rotation z'. ")
         
-        self.__bc_index = boundrycondition.index.isin(nodes_details.index)
+        self.__bc_index = boundarycondition.index.isin(nodes_details.index)
 
         if self.__bc_index.all():
-            if len(boundrycondition)==self.node_list:
-                self.boundrycondition= boundrycondition.sort_index()
-                self.boundrycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
-            elif len(boundrycondition)!=self.node_list:             
-                self.boundrycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
-                boundrycondition.sort_index(inplace=True)
-                self.boundrycondition.loc[boundrycondition.index]= boundrycondition.loc[:]
+            if len(boundarycondition)==self.node_list:
+                self.boundarycondition= boundarycondition.sort_index()
+                self.boundarycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
+            elif len(boundarycondition)!=self.node_list:             
+                self.boundarycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
+                boundarycondition.sort_index(inplace=True)
+                self.boundarycondition.loc[boundarycondition.index]= boundarycondition.loc[:]
         else:
             raise Exception ("These nodes in boundary condition does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
 
@@ -3905,7 +3899,7 @@ class RCFenv():
             self.Mproperties= pd.DataFrame({ "Type": TypeM ,"Material": NameM, "Grade M-": gradeM, "Density (kN/m3)": densityM, "Young Modulus (kN/m2)": EM, "Poisson's Ratio (mu)": muM, "Thermal Coefficient (alpha)": alphaM, "Critical Damping": critM, "Modulus of Rigidity (kN/m2)": GM}, index= prop_index)
 
 
-        self.__OB=  [_RCFforenvelop.remote(self.nodes_details, self.member_details, self.boundrycondition, forcesnodal= self.forcesnodal, autoflooring= self.autoflooring, slab_details= self.slab_details, seismic_def= self.seismic_def, self_weight= self.self_weight, infillwall= self.infillwall, properties= self.Mproperties, col_stablity_index= self.col_stablity_index, load_combo= self.load_combo.iloc[[i]] ) for i in range (len(load_combo)) ]
+        self.__OB=  [_RCFforenvelop.remote(self.nodes_details, self.member_details, self.boundarycondition, forcesnodal= self.forcesnodal, autoflooring= self.autoflooring, slab_details= self.slab_details, seismic_def= self.seismic_def, self_weight= self.self_weight, infillwall= self.infillwall, properties= self.Mproperties, col_stablity_index= self.col_stablity_index, load_combo= self.load_combo.iloc[[i]] ) for i in range (len(load_combo)) ]
 
 
         self.LClist= [f"LC{i}" for i in(self.load_combo.index)]
@@ -3920,7 +3914,7 @@ class RCFenv():
 
         self.__mdd= self.member_details.copy()
         self.__ndd= self.nodes_details.copy()
-        self._bcd= self.boundrycondition.copy()
+        self._bcd= self.boundarycondition.copy()
 
     def preP(self):
         """This function of class :class:`StrucPy.RCFA.RCFenv` performs pre processing for the analysis of a Reinforced Concrete Frame that user intend to analyse for different load combinations. It generates all the pre analysis data. This function should be called before performing analysis.
@@ -4586,12 +4580,12 @@ class RCFenv():
 
         if self.__bc_index.all():
             if len(bound_conditions)==self.node_list:
-                self.__boundrycondition= bound_conditions.sort_index()
-                self.__boundrycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
+                self.__boundarycondition= bound_conditions.sort_index()
+                self.__boundarycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
             elif len(bound_conditions)!=self.node_list:             
-                self.__boundrycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
+                self.__boundarycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
                 bound_conditions.sort_index(inplace=True)
-                self.__boundrycondition.loc[bound_conditions.index]= bound_conditions.loc[:]
+                self.__boundarycondition.loc[bound_conditions.index]= bound_conditions.loc[:]
         else:
             raise Exception ("These nodes in boundary condition does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
 
