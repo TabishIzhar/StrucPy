@@ -408,7 +408,6 @@ class RCF():
         else:
             raise TypeError("Column stability index must be number")
 
-        self.__cords_member_order= None
         self.beams_detail = None
         self.columns_detail = None
         self.nodes_detail= None
@@ -451,9 +450,12 @@ class RCF():
         self.__bd_LDeduct= None
         self.len_beam=[]
         self.__ds= []
+        
+        self.__nodes_arrangement_for_members()
         self.__mdd= self.__member_details.copy()
         self.__ndd= self.__nodes_details.copy()
         self._bcd= self.__boundarycondition.copy()
+        
 
     def __nodes_arrangement_for_members(self):                
         total_members= self.tm
@@ -2363,8 +2365,6 @@ class RCF():
             pass
 
         self.__PreP_status = True
-
-        self.__nodes_arrangement_for_members()
 
         if self.tm < 300:
             self.__arrange_beam_column_nodes()
