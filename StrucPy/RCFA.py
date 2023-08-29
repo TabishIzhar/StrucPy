@@ -2481,7 +2481,7 @@ class RCF():
         fig4= go.Figure()
         fig5= go.Figure()
 
-        fig1.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="top right"))
+        fig1.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="middle right", textfont= 1))
         kk=0
         mem_index= self.member_list
 
@@ -2496,7 +2496,7 @@ class RCF():
             fig2.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines+text',      
                 line=dict(
                         color="black",                # set color to an array/list of desired values
-                        width=10),name= f"member {kk+1}" ))
+                        width=2),name= f"member {kk+1}" ))
 
             ax= xxx[i,2].item() 
             bx= xxx[i+1,2].item() 
@@ -2515,7 +2515,7 @@ class RCF():
             mem_text.append(f"{mem_index[kk]}")
             kk= kk+1
 
-        fig4.add_trace(go.Scatter3d(x=mtcs[:,0],y=mtcs[:,1],z=mtcs[:,2],mode='text', text=mem_text,textposition="middle right"))
+        fig4.add_trace(go.Scatter3d(x=mtcs[:,0],y=mtcs[:,1],z=mtcs[:,2],mode='text', text=mem_text,textposition="middle right", textfont= 1))
 
         
         if self.__slabload_there==1:
