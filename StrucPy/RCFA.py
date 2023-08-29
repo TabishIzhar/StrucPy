@@ -451,10 +451,11 @@ class RCF():
         self.len_beam=[]
         self.__ds= []
         
-        self.__nodes_arrangement_for_members()
         self.__mdd= self.__member_details.copy()
         self.__ndd= self.__nodes_details.copy()
         self._bcd= self.__boundarycondition.copy()
+
+        self.__autoflooring_done= False
         
 
     def __nodes_arrangement_for_members(self):                
@@ -802,6 +803,10 @@ class RCF():
 
     def __autoflooring(self):  
 
+        if self.__autoflooring_done == True:
+            pass
+
+        self.__autoflooring_done = True
         stories= len(self.__nodes_details.y.unique())  
         x_uni= self.__nodes_details.x.unique()
         z_uni= self.__nodes_details.z.unique()
@@ -2366,6 +2371,8 @@ class RCF():
 
         self.__PreP_status = True
 
+        self.__nodes_arrangement_for_members()
+
         if self.tm < 300:
             self.__arrange_beam_column_nodes()
 
@@ -2459,6 +2466,11 @@ class RCF():
         :return: A plotly figure for a member of :class:`StrucPy.RCFA.RCF` objects.
         :rtype: Figure
         """
+
+        if self.__PreP_status!= True:
+            raise Exception ("Preform Pre-processing first")
+
+
         xx= self.__nodes_details.to_numpy()
         nodetext= self.__nodes_details.index.to_numpy()
         xxx= self.__cords_member_order.to_numpy()
@@ -3037,7 +3049,7 @@ class RCF():
             Model.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines',      
                 line=dict(
                         color="black",                # set color to an array/list of desired values
-                        width=10)))
+                        width=1)))
         
         Model.update_layout(scene = dict(xaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
                                    yaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
@@ -3048,7 +3060,9 @@ class RCF():
             Model.add_trace(go.Scatter3d(x=xxx1[i][:,2],y=xxx1[i][:,0],z=xxx1[i][:,1], mode='lines',      
                 line=dict(
                         color="red",                # set color to an array/list of desired values
-                        width=10)))
+                        width=1)))
+
+
 
         Model.update_layout(height=800, width=800, title_text=f"Deflection of Structure")
         return(Model)
@@ -3413,7 +3427,7 @@ class RCF():
         self.load_combo.fillna(0,inplace=True)
         self.__Analysis_performed= False
 
-    def changeFrame(self, member, node= None):
+    def changeFrame(self, member, node= None, width = None, depth = None, xudl= None, yudl= None, zudl= None , delete= False):
         """This non returing function of :class:`StrucPy.RCFA.RCF` object performs changes by deleting members and nodes of Reinforced Concrete Frame. It changes the frame model. 
         :ref:`InputExample:changeFrame` for more details.
 
@@ -3427,57 +3441,137 @@ class RCF():
 
         if not isinstance(member, (int, list)):
             raise Exception ("The member ID provided is of wrong type. It can only be int,float or list ")
-        
-        if isinstance(member, int):
-            member_nodes_check= self.__member_details.index.isin([member])
 
-            if member_nodes_check.any():
-                self.__member_details.drop([member], inplace= True)
-            else:
-                raise Exception (f"These {member} member ID does not exist. " )
-            
-        if isinstance(member, list):
+        if delete == True:
+            if isinstance(member, int):
+                member_nodes_check= self.__member_details.index.isin([member])
 
-            member_nodes_check=    pd.Series(member).isin(self.__member_details.index)
+                if member_nodes_check.any():
+                    self.__member_details.drop([member], inplace= True)
+                else:
+                    raise Exception (f"These {member} member ID does not exist. " )
+                
+            if isinstance(member, list):
 
-            if member_nodes_check.all():
-                self.__member_details.drop(member, inplace= True)
+                member_nodes_check=    pd.Series(member).isin(self.__member_details.index)
 
-            else:
-                raise Exception ("These nodes does not exist in member_details: ",  [i for i, val in enumerate(member_nodes_check) if not val] )
+                if member_nodes_check.all():
+                    self.__member_details.drop(member, inplace= True)
+
+                else:
+                    raise Exception ("These nodes does not exist in member_details: ",  [i for i, val in enumerate(member_nodes_check) if not val] )
           
-
 
         if node is not None:
             if not isinstance(node, (int, list)):
                 raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
 
-        if isinstance(node, int):
-            nodes_check= self.__nodes_details.index.isin([node])
+        if delete == True:
+            if isinstance(node, int):
+                nodes_check= self.__nodes_details.index.isin([node])
 
-            if nodes_check.any():
-                member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin([node])
+                if nodes_check.any():
+                    member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin([node])
 
-                if member_nodes_check.any().any():
-                    raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+                    if member_nodes_check.any().any():
+                        raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+                    
+                    self.__nodes_details.drop([node], inplace= True)
+                else:
+                    raise Exception (f"The {node} node ID does not exist. " )
                 
-                self.__nodes_details.drop([node], inplace= True)
-            else:
-                raise Exception (f"The {node} node ID does not exist. " )
+            if isinstance(member, list):
+                nodes_check=    pd.Series(node).isin(self.__nodes_details.index)
+
+                if nodes_check.all():
+                    member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin(node)
+
+                    if member_nodes_check.any().any():
+                        raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+
+                    self.__nodes_details.drop(node, inplace= True)
+                else:
+                    raise Exception ("These nodes does not exist in details: ",  [i for i, val in enumerate(nodes_check) if not val] ) 
             
-        if isinstance(member, list):
-            nodes_check=    pd.Series(node).isin(self.__nodes_details.index)
-
-            if nodes_check.all():
-                member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin(node)
-
-                if member_nodes_check.any().any():
-                    raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
-
-                self.__nodes_details.drop(node, inplace= True)
-            else:
-                raise Exception ("These nodes does not exist in details: ",  [i for i, val in enumerate(nodes_check) if not val] ) 
             
+        if yudl is not None:
+            if not isinstance(yudl, (int, list)):
+                raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+
+        if zudl is not None:
+            if not isinstance(zudl, (int, list)):
+                raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+
+
+
+
+        if delete == False:
+            if isinstance(member, int):
+                member_nodes_check= self.__member_details.index.isin([member])
+
+                if member_nodes_check.any():
+                    if width is not None:
+                        if not isinstance(width, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'b']= width
+
+                    if depth is not None:
+                        if not isinstance(depth, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'d']= depth  
+
+                    if xudl is not None:
+                        if not isinstance(xudl, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'xUDL']= xudl                        
+
+                    if yudl is not None:
+                        if not isinstance(yudl, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'yUDL']= yudl
+
+                    if zudl is not None:
+                        if not isinstance(zudl, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'zUDL']= zudl
+
+                else:
+                    raise Exception (f"These {member} member ID does not exist. " )
+                
+
+            if isinstance(member, list):
+                member_nodes_check=    pd.Series(member).isin(self.__member_details.index)
+
+                if member_nodes_check.all():
+                    if width is not None:
+                        if not isinstance(width, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'b']= width
+
+                    if depth is not None:
+                        if not isinstance(depth, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'d']= depth  
+
+                    if xudl is not None:
+                        if not isinstance(xudl, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'xUDL']= xudl                        
+
+                    if yudl is not None:
+                        if not isinstance(yudl, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'yUDL']= yudl
+
+                    if zudl is not None:
+                        if not isinstance(zudl, (int, list)):
+                            raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
+                        self.__member_details.loc[member,'zUDL']= zudl
+
+                else:
+                    raise Exception ("These nodes does not exist in member_details: ",  [i for i, val in enumerate(member_nodes_check) if not val] )
+
+
         n1= self.__member_details.iloc[:,0:2].to_numpy()
         orphan_nodes_status = self.__nodes_details.index.isin(n1.flatten())
         
