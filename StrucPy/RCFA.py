@@ -448,13 +448,7 @@ class RCF():
         self.__Analysis_performed= False
         self.baseN= None
         self.__bd_LDeduct= None
-        self.len_beam=[]
-        self.__ds= []
-        
-        self.__mdd= self.__member_details.copy()
-        self.__ndd= self.__nodes_details.copy()
-        self._bcd= self.__boundarycondition.copy()
-
+    
         self.__autoflooring_done= False
         
 
@@ -475,6 +469,10 @@ class RCF():
             type_m.append(tym)
         self.__member_details['Type']= type_m    
         self.__cords_member_order= mem_nodes_cord
+        
+        self.__mdd= self.__member_details.copy()
+        self.__ndd= self.__nodes_details.copy()
+        self._bcd= self.__boundarycondition.copy()
 
 
 #------------------------------------------------------------------------------
@@ -1483,7 +1481,7 @@ class RCF():
         
         member_no= 0
         mem_index= self.member_list
-
+        self.len_beam=[]
         for ii in range(0,tm*2,2):
             
             mem_name= mem_index[member_no]
@@ -1800,6 +1798,7 @@ class RCF():
         nodes= self.__nodes_details.to_numpy()
         q= (mem_l.to_numpy())      #in Kn
 
+        self.__ds= []
         np.set_printoptions(precision = 3, suppress = True)  #surpressing exponential option while printing
         
         tm= self.tm
@@ -2481,7 +2480,7 @@ class RCF():
         fig4= go.Figure()
         fig5= go.Figure()
 
-        fig1.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="middle right", textfont= 1))
+        fig1.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="middle right"))
         kk=0
         mem_index= self.member_list
 
@@ -2496,7 +2495,7 @@ class RCF():
             fig2.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines+text',      
                 line=dict(
                         color="black",                # set color to an array/list of desired values
-                        width=2),name= f"member {kk+1}" ))
+                        width=3),name= f"member {kk+1}" ))
 
             ax= xxx[i,2].item() 
             bx= xxx[i+1,2].item() 
@@ -2515,7 +2514,7 @@ class RCF():
             mem_text.append(f"{mem_index[kk]}")
             kk= kk+1
 
-        fig4.add_trace(go.Scatter3d(x=mtcs[:,0],y=mtcs[:,1],z=mtcs[:,2],mode='text', text=mem_text,textposition="middle right", textfont= 1))
+        fig4.add_trace(go.Scatter3d(x=mtcs[:,0],y=mtcs[:,1],z=mtcs[:,2],mode='text', text=mem_text,textposition="middle right"))
 
         
         if self.__slabload_there==1:
@@ -2607,8 +2606,9 @@ class RCF():
             ]
         )
 
-        Model.update_layout(height=800, width=1500)
+        Model.update_layout(height=1000, width=1600)
 
+        # fw= go.FigureWidget(Model)
         return (Model)
 
 
@@ -3439,9 +3439,12 @@ class RCF():
         :return: None
         """
 
-        if not isinstance(member, (int, list)):
-            raise Exception ("The member ID provided is of wrong type. It can only be int,float or list ")
+        if not isinstance(member, (int, list, str)):
+            raise Exception ("The member ID provided is of wrong type. It can only be int, list of ID's or 'All' ")
 
+        if isinstance(member, str):
+            member= self.member_list
+            
         if delete == True:
             if isinstance(member, int):
                 member_nodes_check= self.__member_details.index.isin([member])
@@ -3467,46 +3470,40 @@ class RCF():
                 raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
 
         if delete == True:
-            if isinstance(node, int):
-                nodes_check= self.__nodes_details.index.isin([node])
+            if node is not None:
+                if isinstance(node, int):
+                    nodes_check= self.__nodes_details.index.isin([node])
 
-                if nodes_check.any():
-                    member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin([node])
+                    if nodes_check.any():
+                        member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin([node])
 
-                    if member_nodes_check.any().any():
-                        raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+                        if member_nodes_check.any().any():
+                            raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+                        
+                        self.__nodes_details.drop([node], inplace= True)
+                        self.__boundarycondition.drop([node], inplace= True)
+                        self.__forcesnodal.drop([node], inplace= True)
+                    else:
+                        raise Exception (f"The {node} node ID does not exist. " )
                     
-                    self.__nodes_details.drop([node], inplace= True)
-                else:
-                    raise Exception (f"The {node} node ID does not exist. " )
-                
-            if isinstance(member, list):
-                nodes_check=    pd.Series(node).isin(self.__nodes_details.index)
+                if isinstance(member, list):
+                    nodes_check=    pd.Series(node).isin(self.__nodes_details.index)
 
-                if nodes_check.all():
-                    member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin(node)
+                    if nodes_check.all():
+                        member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin(node)
 
-                    if member_nodes_check.any().any():
-                        raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
+                        if member_nodes_check.any().any():
+                            raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
 
-                    self.__nodes_details.drop(node, inplace= True)
-                else:
-                    raise Exception ("These nodes does not exist in details: ",  [i for i, val in enumerate(nodes_check) if not val] ) 
+                        self.__nodes_details.drop(node, inplace= True)
+                        self.__boundarycondition.drop(node, inplace= True)
+                        self.__forcesnodal.drop(node, inplace= True)
+                    else:
+                        raise Exception ("These nodes does not exist in details: ",  [i for i, val in enumerate(nodes_check) if not val] ) 
             
-            
-        if yudl is not None:
-            if not isinstance(yudl, (int, list)):
-                raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
-
-        if zudl is not None:
-            if not isinstance(zudl, (int, list)):
-                raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
-
-
-
 
         if delete == False:
-            if isinstance(member, int):
+            if isinstance(member, (int, str)):
                 member_nodes_check= self.__member_details.index.isin([member])
 
                 if member_nodes_check.any():
@@ -3573,11 +3570,24 @@ class RCF():
 
 
         n1= self.__member_details.iloc[:,0:2].to_numpy()
+
         orphan_nodes_status = self.__nodes_details.index.isin(n1.flatten())
-        
-        orphan_nodes= [i for i, val in enumerate(orphan_nodes_status) if not val]
+
+        orphan_nodes= [self.node_list [i] for i, val in enumerate(orphan_nodes_status) if not val]
+
 
         self.__nodes_details.drop(orphan_nodes, inplace= True)
+        self.__boundarycondition.drop(orphan_nodes, inplace= True)
+        self.__forcesnodal.drop(orphan_nodes, inplace= True)
+
+        self.member_list= self.__member_details.index.to_list()
+        self.node_list= self.__nodes_details.index.to_list()
+        self.tn= self.__nodes_details.shape[0]
+        self.tm= self.__member_details.shape[0]
+
+
+        self.__mdd= self.__member_details.copy()
+        self.__ndd= self.__nodes_details.copy()
 
         self.__PreP_status= False
         self.__Analysis_performed= False
