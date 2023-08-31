@@ -1330,7 +1330,7 @@ class RCF():
 
                 Loadings_floor= pd.concat([Loadings_floor, floor_sum ])        
         
-                self.__FL=Loadings_floor
+                self.floor_loading = Loadings_floor
 
         member_sw= self.__column_Lumploads['Self-Weight(kN)']+ self.__beam_Lumploads['Self-Weight(kN)']
         member_odl= self.__column_Lumploads['Other-Dead-Loads']+ self.__beam_Lumploads['Other-Dead-Loads']
@@ -1354,11 +1354,16 @@ class RCF():
             TSL_LL= Loadings_floor.loc[:,'LL(kN)']
 
             self.story_lumploads = pd.concat([TSL_self_weight,TSL_other_dead_load,TSL_LL, story_ht_pd],axis=1)
+            self.column_Lumploads = self.__column_Lumploads
+            self.beam_Lumploads = self.__beam_Lumploads
+             
         else:
             TSL_self_weight= Loadings_members.loc[:,'Self-Weight(kN)']
             TSL_other_dead_load= Loadings_members.loc[:,'Other-Dead-Loads']
 
             self.story_lumploads = pd.concat([TSL_self_weight,TSL_other_dead_load,story_ht_pd],axis=1)
+            self.column_Lumploads = self.__column_Lumploads
+            self.beam_Lumploads = self.__beam_Lumploads
 
     def __slabvdl(self):
         dlvdl= pd.DataFrame()           # DEAD LOAD DataFrame for slab
@@ -3240,7 +3245,7 @@ class RCF():
         return (self.__SF_BM)
     
 
-    def MaxmemF(self):
+    def maxmemF(self):
         """Returns a *List* of 2D Numpy Array of :class:`StrucPy.RCFA.RCF` objects presenting detail of members (beams and columns) forces. 
         
         First column represents distance from lower number node to higher number node (2 nodes at end of member).
@@ -3373,37 +3378,40 @@ class RCF():
             raise Exception("Perform Pre-Processing of the structure using method 'preP' before changing floor details")
 
         if floor==None:
-            if thickness is not None:
-                self.__slab_details[["Thickness(mm)"]]= thickness
-
-            if FF is not None:
-                self.__slab_details[["FF(kN/m2)"]]= FF
-
-            if LL is not None:
-                self.__slab_details[["LL(kN/m2)"]]= LL
-
-            if WP is not None:
-                self.__slab_details[["Waterproofing(kN/m2)"]]= WP
-
-            if thickness== None and FF==None and LL==None and WP==None and delf==None:
-                exit("Nothing has been passed to perform changes")
-
-        if floor is not None:
-            if floor.dtype in ["int32","int64"]:
+            if self.__slabload_there== True:
                 if thickness is not None:
-                    self.__slab_details.loc[floor, ["Thickness(mm)"]]= thickness
+                    self.__slab_details[["Thickness(mm)"]]= thickness
 
                 if FF is not None:
-                    self.__slab_details.loc[floor, ["FF(kN/m2)"]]= FF
+                    self.__slab_details[["FF(kN/m2)"]]= FF
 
                 if LL is not None:
-                    self.__slab_details.loc[floor, ["LL(kN/m2)"]]= LL
+                    self.__slab_details[["LL(kN/m2)"]]= LL
 
                 if WP is not None:
-                    self.__slab_details.loc[floor, ["Waterproofing(kN/m2)"]]= WP
+                    self.__slab_details[["Waterproofing(kN/m2)"]]= WP
+
+                if thickness== None and FF==None and LL==None and WP==None and delf==None:
+                    exit("Nothing has been passed to perform changes")
+
+        if floor is not None:
+            if self.__slabload_there== True:
+                if floor.dtype in ["int32","int64"]:
+                    if thickness is not None:
+                        self.__slab_details.loc[floor, ["Thickness(mm)"]]= thickness
+
+                    if FF is not None:
+                        self.__slab_details.loc[floor, ["FF(kN/m2)"]]= FF
+
+                    if LL is not None:
+                        self.__slab_details.loc[floor, ["LL(kN/m2)"]]= LL
+
+                    if WP is not None:
+                        self.__slab_details.loc[floor, ["Waterproofing(kN/m2)"]]= WP
         
         if delf is not None:
-            self.__slab_details.drop(delf, inplace = True)
+            if self.__slabload_there== True:
+                self.__slab_details.drop(delf, inplace = True)
 
         self.slab_pd= None
         self.__slab_beam_load_transfer()
@@ -3440,11 +3448,18 @@ class RCF():
         """
 
         if not isinstance(member, (int, list, str)):
-            raise Exception ("The member ID provided is of wrong type. It can only be int, list of ID's or 'All' ")
+            raise Exception ("The member ID provided is of wrong type. It can only be int, list of ID's, 'all', 'beam' or 'column' ")
 
         if isinstance(member, str):
-            member= self.member_list
-            
+            if member.lower()== 'all':
+                member= self.member_list
+            elif member.lower()== 'beam':
+                member= self.__member_details[self.__member_details['Type']=='Beam'].index.to_list()
+            elif member.lower()== 'column':
+                member= self.__member_details[self.__member_details['Type']=='Col'].index.to_list()
+            else:
+                raise Exception("Something wrong with member argument. It can only be 'all', 'beam' or 'column' ")
+                       
         if delete == True:
             if isinstance(member, int):
                 member_nodes_check= self.__member_details.index.isin([member])
@@ -4592,135 +4607,3 @@ class RCFenv():
         
         return (LC)
     
-    def changeFrame(self, member, node= None):
-        """This non returing function of :class:`StrucPy.RCFA.RCF` object performs changes by deleting members and nodes of Reinforced Concrete Frame. It changes the frame model. 
-        :ref:`InputExample:changeFrame` for more details.
-
-        :param member: Member ID/ID's which has be deleted from the frame.
-        :type member: int/list
-
-        :param node: node ID/ID's which has be deleted from the frame.
-        :type node: int/list
-        :return: None
-        """
-
-        if not isinstance(member, (int, list)):
-            raise Exception ("The member ID provided is of wrong type. It can only be int,float or list ")
-        
-        if isinstance(member, int):
-            member_nodes_check= self.__member_details.index.isin([member])
-
-            if member_nodes_check.any():
-                self.__member_details.drop([member], inplace= True)
-            else:
-                raise Exception (f"These {member} member ID does not exist. " )
-            
-        if isinstance(member, list):
-
-            member_nodes_check=    pd.Series(member).isin(self.__member_details.index)
-
-            if member_nodes_check.all():
-                self.__member_details.drop(member, inplace= True)
-
-            else:
-                raise Exception ("These nodes does not exist in member_details: ",  [i for i, val in enumerate(member_nodes_check) if not val] )
-          
-
-
-        if node is not None:
-            if not isinstance(node, (int, list)):
-                raise Exception ("The nodes ID provided is of wrong type. It can only be int,float or list ")
-
-        if isinstance(node, int):
-            nodes_check= self.__nodes_details.index.isin([node])
-
-            if nodes_check.any():
-                member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin([node])
-
-                if member_nodes_check.any().any():
-                    raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
-                
-                self.__nodes_details.drop([node], inplace= True)
-            else:
-                raise Exception (f"The {node} node ID does not exist. " )
-            
-        if isinstance(member, list):
-            nodes_check=    pd.Series(node).isin(self.__nodes_details.index)
-
-            if nodes_check.all():
-                member_nodes_check= self.__member_details.loc[:,["Node1", "Node2"]].isin(node)
-
-                if member_nodes_check.any().any():
-                    raise Exception ("These node can not be deleted as it is being used by a member. First delete the member in order to remove the nodes")
-
-                self.__nodes_details.drop(node, inplace= True)
-            else:
-                raise Exception ("These nodes does not exist in details: ",  [i for i, val in enumerate(nodes_check) if not val] ) 
-            
-        n1= self.__member_details.iloc[:,0:2].to_numpy()
-        orphan_nodes_status = self.__nodes_details.index.isin(n1.flatten())
-        
-        orphan_nodes= [i for i, val in enumerate(orphan_nodes_status) if not val]
-
-        self.__nodes_details.drop(orphan_nodes, inplace= True)
-
-        self.__PreP_status= False
-
-    def changeBoundcond(self, bound_conditions):
-        """This non returing function of :class:`StrucPy.RCFA.RCF` object performs changes in boundary condition of Reinforced Concrete Frame. It completely  replaces the boundary existing boundary consition with the passed one. :ref:`InputExample:changeBoundcond` for more details.
-
-        :param bound_conditions: Details of the new boundary condition to be used in analysis.
-        :type bound_conditions: Dataframe
-        :return: None
-        """
-
-        if not isinstance(bound_conditions, pd.DataFrame):
-            raise Exception ("The bound_conditions provided is of wrong type. It can only be dataframe ")
-        
-        if len(bound_conditions.columns) != 6:
-            raise Exception ("The boundary condition dataframe must contain 6 columns representing each degree of freedom in 3D space i.e. 'Trans x', 'Trans y', 'Trans z', 'Rotation x', 'Rotation y', 'Rotation z'. ")
-        
-        self.__bc_index = bound_conditions.index.isin(self.__nodes_details.index)
-
-        if self.__bc_index.all():
-            if len(bound_conditions)==self.node_list:
-                self.__boundarycondition= bound_conditions.sort_index()
-                self.__boundarycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
-            elif len(bound_conditions)!=self.node_list:             
-                self.__boundarycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
-                bound_conditions.sort_index(inplace=True)
-                self.__boundarycondition.loc[bound_conditions.index]= bound_conditions.loc[:]
-        else:
-            raise Exception ("These nodes in boundary condition does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
-
-        self.__PreP_status= False
-
-    def modelND(self):
-        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` object presenting the nodes of the reinforced concrete frame. It a parameter passed by user or generated by agrumunet `framegen`.
-         
-        :param: None
-        :return: A *DataFrame* of :class:`StrucPy.RCFA.RCF` objects.
-        :rtype: *DataFrame* 
-        """  
-        return (self.__ndd)
-    
-    def modelMD(self):
-        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` object presenting the members of the reinforced concrete frame. It a parameter passed by user or generated by agrumunet `framegen`.
-         
-        :param: None
-        :return: A *DataFrame* of :class:`StrucPy.RCFA.RCF` objects.
-        :rtype: *DataFrame* 
-        """  
-
-        return (self.__mdd)
-    
-    def modelBCD(self):
-        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` object presenting the boundary condition of the reinforced concrete frame. It a parameter passed by user or generated by agrumunet `framegen`.
-         
-        :param: None
-        :return: A *DataFrame* of :class:`StrucPy.RCFA.RCF` objects.
-        :rtype: *DataFrame* 
-        """  
-
-        return (self._bcd)
-
