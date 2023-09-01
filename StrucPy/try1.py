@@ -1869,10 +1869,10 @@ class _RCFforenvelop():
         self.axial_forces_pd= pd.DataFrame({"Axial Loads": axial_forces} ,index= self.member_list)
 
     
-        # if self.tm > 2:
-        #     maxforces_pd.loc[:,:,'+ve']= maxforces_pd.loc[:,:,'+ve'].where(maxforces_pd.loc[:,:,'+ve']>=0, "NA") 
+        if self.tm > 2:
+            maxforces_pd.loc[:,:,'+ve']= maxforces_pd.loc[:,:,'+ve'].where(maxforces_pd.loc[:,:,'+ve']>=0, "NA") 
             
-        #     maxforces_pd.loc[:,:,'-ve']= maxforces_pd.loc[:,:,'-ve'].where(maxforces_pd.loc[:,:,'-ve']<0, "NA")
+            maxforces_pd.loc[:,:,'-ve']= maxforces_pd.loc[:,:,'-ve'].where(maxforces_pd.loc[:,:,'-ve']<0, "NA")
 
         self.__maxF_pd= maxforces_pd
 
