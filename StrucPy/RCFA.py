@@ -801,9 +801,6 @@ class RCF():
 
     def __autoflooring(self):  
 
-        if self.__autoflooring_done == True:
-            pass
-
         self.__autoflooring_done = True
         stories= len(self.__nodes_details.y.unique())  
         x_uni= self.__nodes_details.x.unique()
@@ -2060,6 +2057,8 @@ class RCF():
 
         self.BM_SFmat1, self.member_nodes1, self.ds1 = ray.get([cal_internalF.remote(self.__member_details.iloc[i,:], self.__nodes_details.iloc[i,:], nodes, dis, self.__trans_mat[i,:,:], self.__local_stiffness[i,:,:], self.__lnf[i,:,:] , q , mem_names, i, self.__point_L , self.__point_loads, self.__slabload_there, sb, self.load_combo, self.__concrete_densitySlab) for i in range(tm)])
 
+        pass
+
 
     @ray.remote
     def __defCal(E,I, d1,d2,L, bm):
@@ -2252,6 +2251,7 @@ class RCF():
         R=  self.__seismic_def['R'].item()
         I= self.__seismic_def['I'].item()
         Sag= self.__seismic_def['Sag'].item()
+
         if direction=='x' or direction=='-x':
             base_nodes= self.__nodes_details.loc[self.__nodes_details.y== min(self.__nodes_details.y)]
             d= max(base_nodes.x) - min(base_nodes.x)
@@ -2266,6 +2266,8 @@ class RCF():
             else:
                 T= (0.09*h)/np.sqrt(d)
             self.__seismic_def['Time Period']= T
+        else:
+            T = self.__seismic_def['Time Period'].item()
 
         if Sag ==0:
             if self.__seismic_def['Soil Type'].item()==1: #Hard Soil
@@ -2290,6 +2292,8 @@ class RCF():
                 if T>4:
                     Sag= 0.42                    
             self.__seismic_def['Sag']= Sag
+        else:
+            T = self.__seismic_def['Sag'].item()
 
         self.__seismicD= self.__seismic_def.copy()
 
@@ -2841,8 +2845,6 @@ class RCF():
         fig.update_yaxes(title_text="<b>Deflection(mm)</b>", row=2, col=1)
         fig.update_yaxes(title_text="<b>Deflection(mm)</b>", row=3, col=1)
         return(fig)
-
-
 
     def defG(self, element):
 
@@ -3670,7 +3672,6 @@ class RCFenv():
     """
     This is a class to represent the analysis of 2D/3D reinforced concrete frame model with multiple load combinations. It form envelop for different load combinations. It also creates an object for the reinforced concrete frame model on which analysis is performed for every load combinations.
 
-
     :param nodes_details: A handle to the :class:`StrucPy.RCFA.RCFenv` that detects the nodes and their coordinates in space. Check :ref:`InputExample:Nodes Details` for more details.
     :type nodes_details: DataFrame
     
@@ -3680,9 +3681,6 @@ class RCFenv():
     :param boundcondition: A handle to the :class:`StrucPy.RCFA.RCFenv` that detects the nodes/joints condition of reinforced concrete frame i.e. types of supports (fixed, hinged etc.) and joints conditions. Check :ref:`InputExample:Boundary Conditions` for more details.
     :type boundcondition: DataFrame
     
-    :param framegen: A handle to the :class:`StrucPy.RCFA.RCF` that detects the number of bays and total length of required reinforced concrete frame along x- axis, z-axis and height along y-axis. Check :ref:`InputExample:framegen` for more details.
-    :type framegen: DataFrame 
-
     :param forcesnodal: A handle to the :class:`StrucPy.RCFA.RCFenv` that detects the nodes/joints forces of reinforced concrete frame, defaults to None (No nodel forces or moments). Check :ref:`InputExample:Nodal Forces Details` for more details.
     :type forcesnodal: DataFrame, optional
     
@@ -3714,87 +3712,7 @@ class RCFenv():
     :type col_stablity_index: Float/Int, optional
     """
 
-    def __init__(self, nodes_details, member_details, boundarycondition, load_combo, framegen= None, forcesnodal=None, slab_details=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, col_stablity_index= 0.04):
-
-        if framegen is not None:
-            if not isinstance(framegen, pd.DataFrame):
-                raise TypeError ("Type of 'framegen' must be DataFrame")    
-
-            if len(framegen.columns) != 2:
-                raise Exception ("framegen must have 2 columns: ['Number of bays', 'Total Length']")
-            
-            if len(framegen.index) != 3:
-                raise Exception ("framegen must have 3 rows: ['Along length (x-axis) ', 'Along height (y-axis)'], 'Along width (z-axis)']")            
-
-            lx= framegen.iat[0,1]
-            ly= framegen.iat[1,1]
-            lz= framegen.iat[2,1]
-            nx= framegen.iat[0,0]
-            ny= framegen.iat[1,0]
-            nz= framegen.iat[2,0]
-            x = np.linspace(0, lx, nx+1)
-            y = np.linspace(0, ly, ny+1)
-            z = np.linspace(0, lz, nz+1)
-
-
-            zv,xv = np.meshgrid(z,x)
-
-            xv= xv.flatten()
-            zv= zv.flatten()
-
-            zvv, yv = np.meshgrid(zv, y)
-
-            xvv,yvv=  np.meshgrid( xv, y)
-
-            cord_array= np.vstack((xvv.flatten(), yv.flatten(), zvv.flatten())).T
-            nodes_details= pd.DataFrame(cord_array, columns= ['x','y','z'], index = [i for i in range (1,len (cord_array)+1)])
-
-
-            total_members= (((nx* (nz+1))+ ((nx+1)* nz)) * ny) + (((nx+1)* (nz+1) * ny))
-            mem_cords= np.empty([total_members,2])
-            member_number= 0
-
-            for ka in range (1,len(y)):
-                y_val= y[ka]
-                new_nodes1= nodes_details[nodes_details.y.isin([y_val])]
-                for ia in x:
-                    new_node2= new_nodes1[new_nodes1.x.isin([ia])]
-                    node_ids= new_node2.index.to_list()
-                    for ja in range (len(new_node2)-1):
-                        mem_cords[member_number, 0] = node_ids[ja]
-                        mem_cords[member_number, 1] = node_ids[ja+1]
-                        member_number = member_number+1
-
-                for ia in z:
-                    new_node2= new_nodes1[new_nodes1.z.isin([ia])]
-                    node_ids= new_node2.index.to_list()
-                    for ja in range (len(new_node2)-1):
-                        mem_cords[member_number, 0] = node_ids[ja]
-                        mem_cords[member_number, 1] = node_ids[ja+1]
-                        member_number = member_number+1
-
-            nodes_details_usable= nodes_details.sort_values(by=['x', 'z']).copy()
-            node_ids= nodes_details_usable.index.to_list()
-
-            for ka in x:
-                new_nodes1= nodes_details[nodes_details.x.isin([ka])]
-                for ia in z:    
-                    new_node2= new_nodes1[new_nodes1.z.isin([ia])]
-                    node_ids= new_node2.index.to_list()
-                    for ja in range (len(new_node2)-1):
-                        mem_cords[member_number, 0] = node_ids[ja]
-                        mem_cords[member_number, 1] = node_ids[ja+1]
-                        member_number = member_number+1       
-            
-            mem_cords= mem_cords.astype(np.int64)
-            member_details= pd.DataFrame(mem_cords, columns= ['Node1','Node2'], index = [i for i in range (1,len (mem_cords)+1)])
-
-            member_details[['b', 'd']]= 500
-            member_details[['xUDL', 'yUDL', 'zUDL']]= 0
-            base_nodes= nodes_details[nodes_details.y.isin([y[0]])]
-
-            boundarycondition_array= np.zeros ([len(base_nodes), 6])
-            boundarycondition= pd.DataFrame(boundarycondition_array, columns= ["x","y","z","thetax","thetay","thetaz"], index = base_nodes.index)
+    def __init__(self, nodes_details, member_details, boundarycondition, load_combo, forcesnodal=None, slab_details=None, seismic_def=None,self_weight= True, infillwall=False, autoflooring= False, properties= None, grade_conc= 25, col_stablity_index= 0.04):
 
         if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundarycondition]):
             raise TypeError ("Type of the argument must be DataFrame")
@@ -4030,10 +3948,6 @@ class RCFenv():
 
         self.__Anlaysisperformed= False
         self.__PreP_status= False
-
-        self.__mdd= self.member_details.copy()
-        self.__ndd= self.nodes_details.copy()
-        self._bcd= self.boundarycondition.copy()
 
     def preP(self):
         """This function of class :class:`StrucPy.RCFA.RCFenv` performs pre processing for the analysis of a Reinforced Concrete Frame that user intend to analyse for different load combinations. It generates all the pre analysis data. This function should be called before performing analysis.

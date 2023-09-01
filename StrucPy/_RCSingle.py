@@ -59,14 +59,6 @@ class _RCFforenvelop():
             self.__seismic_def.columns= ["Z","I","R","Sag","Damping(%)","Soil Type", "Time Period" ]
 
 
-        # if point_loads is None:
-        #     self.__point_L= False
-        # else:
-        #     if not isinstance(point_loads,pd.DataFrame): 
-        #         raise TypeError ("Type of the 'point_loads' must be DataFrame")
-        #     self.__point_L= True
-        #     self.__point_loads = point_loads
-
 
         self.__Mproperties= properties.copy()
         self.__col_stablity_index= col_stablity_index
@@ -111,7 +103,6 @@ class _RCFforenvelop():
 
         self.baseN= None
         self.__bd_LDeduct= None
-        self.len_beam=[]
         self.__ds= []
         self.__Analysis_performed= False
         self.__PreP_status= False
@@ -134,6 +125,11 @@ class _RCFforenvelop():
             type_m.append(tym)
         self.__member_details['Type']= type_m    
         self.__cords_member_order= mem_nodes_cord
+        
+        self.__mdd= self.__member_details.copy()
+        self.__ndd= self.__nodes_details.copy()
+        self._bcd= self.__boundarycondition.copy()
+
 
 #------------------------------------------------------------------------------
     def __arrange_beam_column_nodes(self): 
@@ -417,9 +413,11 @@ class _RCFforenvelop():
         
         self.__bd_LDeduct["L_clear"]= self.__bd_LDeduct["L"]-((self.__bd_LDeduct['WDedn1']/2000)+(self.__bd_LDeduct['WDedn2']/2000))
 
+        self.beam_details_with_deduction= self.beams_detail.copy()
         self.__beams_detail_preP= self.beams_detail.copy()     
         self.__columns_detail_preP= self.columns_detail.copy()
         self.__nodes_detail_preP= self.nodes_detail.reset_index().copy()
+
 
     def __arrange_all(self):
 
@@ -440,7 +438,9 @@ class _RCFforenvelop():
         beam_detail_x= self.gf2
         beam_detail_z= self.gf3
         
+
         bd_LDeduct, real_beam_details, beam_details, nodesD, node_details = ray.get(arrange_nodes_Frame.remote(self.__member_details, self.__nodes_details,beams_mat, beam_detail_x, beam_detail_z, col_mat ))
+
 
         self.baseN= baseN
         self.__bd_LDeduct= bd_LDeduct.copy()
@@ -454,8 +454,10 @@ class _RCFforenvelop():
         self.__columns_detail_preP= self.columns_detail.copy()
         self.__nodes_detail_preP= node_details.reset_index().copy()
 
+
     def __autoflooring(self):  
 
+        self.__autoflooring_done = True
         stories= len(self.__nodes_details.y.unique())  
         x_uni= self.__nodes_details.x.unique()
         z_uni= self.__nodes_details.z.unique()
@@ -490,6 +492,7 @@ class _RCFforenvelop():
                     else:
                         slab_details= pd.DataFrame({"Node1": N1, "Node2": N2, "Node3": N3, "Node4": N4,	"Thickness(mm)": 150, "FF(kN/m2)": -1, "LL(kN/m2)": -3, "Waterproofing(kN/m2)":0, "Floor": i }, index=[slab_no]) 
                         slab_no= slab_no+1
+                    
                     self.__slab_details= pd.concat([self.__slab_details,slab_details])  
 
 
@@ -503,10 +506,9 @@ class _RCFforenvelop():
         for i in (s1.index):
             beam_no= []
             length = []
-
-
+            
             for j in (bd.index):
-
+                
                 yes= bd.loc[j,["Node1","Node2"]].isin(s1.loc[i])
                 if yes.all():
                     beam_no.append(j) 
@@ -707,9 +709,8 @@ class _RCFforenvelop():
             self.__concrete_density_beam= 0
             self.__concrete_density_col= 0
             self.__concrete_densitySlab = 0
-
+            
     def __member_detailing(self):
-        
         self.beams_detail= self.__beams_detail_preP.copy()     
         self.columns_detail= self.__columns_detail_preP.copy()
         self.nodes_detail= self.__nodes_detail_preP.copy()
@@ -735,15 +736,18 @@ class _RCFforenvelop():
         p_y=self.__nodes_details.sort_values(by=['y','x', 'z'])
         building_base= p_y[p_y.y.isin([p_y.y.min()])].index
         building_base=building_base.values.reshape((1,len(building_base)))
+
         for i in range(len(self.nodes_detail)):
-       
+            
             b1=self.nodes_detail.at[i,'Beam1']
             b2=self.nodes_detail.at[i,'Beam2']
             b3=self.nodes_detail.at[i,'Beam3']
             b4=self.nodes_detail.at[i,'Beam4']
             Kb=0
             Kc=0
+            
             bottom_node=self.nodes_detail.Node[i]==building_base
+            
             if bottom_node.any():
                 Kb= np.inf  
             else: 
@@ -754,14 +758,16 @@ class _RCFforenvelop():
         
             c1= self.nodes_detail.Col1[i]
             c2= self.nodes_detail.Col2[i]  
+
             for j in range (1,3):
                 ff= locals()["c"+str(j)]
                 if ff!=0:
                     Kc = Kc + self.columns_detail.Stiffness_Factor[ff]        
             K= Kb+Kc
             self.nodes_detail.loc[i,'Stiffness']= K
-        self.nodes_detail= self.nodes_detail.set_index('Node')
 
+            
+        self.nodes_detail= self.nodes_detail.set_index('Node')
 
     def __swayORnot(self):
         self.def_story= []
@@ -784,8 +790,8 @@ class _RCFforenvelop():
             
             SaxialF= self.axial_forces_pd.loc[cols].sum().item()   # in kN
 
-            self.story_axial_load.append(SaxialF)    
-
+            self.story_axial_load.append(SaxialF) 
+            
             if i!=0:
                 stability_index= (SaxialF*avg_def)/(self.__SeismicShear.iat[i,0] * (self.__ASD.iat[i,3]*1000))
             else:
@@ -838,6 +844,7 @@ class _RCFforenvelop():
                 K= np.sqrt((1+(0.2*(B1+B2))-(0.12*B1*B2))/ (1-(0.8*(B1+B2))+(0.6*B1*B2)))
                 if K<1.2:
                     K=1.2
+
             self.columns_detail.loc[i,'Lef_coef']= K
             self.columns_detail.loc[i,'Lef']= K*self.columns_detail.L[i]
             s_ratio= self.columns_detail.Lef[i] /((max(self.columns_detail.b[i],self.columns_detail.d[i]))/1000)
@@ -847,6 +854,7 @@ class _RCFforenvelop():
                 self.columns_detail.loc[i,'Type']= "Pedestal"
             else:
                 self.columns_detail.loc[i,'Type']= "Short"
+
 
     def __floorLoading(self):
         s1= self.__slab_details.iloc[:,0:4]
@@ -869,18 +877,21 @@ class _RCFforenvelop():
             wp= self.__slab_details.loc[i,['Waterproofing(kN/m2)']].values[0]
 
             #floor loads
-            sw= self.__concrete_densitySlab*t*length[0]*length[2]/1000      #kN
+            sw= -1*self.__concrete_densitySlab*t*length[0]*length[2]/1000      #kN
             odl= (ff+wp)*length[0]*length[2]        #kN
             oll= ll*length[0]*length[2]
             story= bd.loc[beam_no[0],'Story']
             floads_pd= pd.DataFrame({'Self-Weight(kN)': sw, "Other-Dead-Loads":odl,  'LL(kN)': oll, 'Story':story},index=[i])
             floor_loads= pd.concat([floor_loads, floads_pd])
         self.__floor_loads= floor_loads
+        
 
     def __tloads(self):
         #updating_member_details= self.properties()
         if self.__slabload_there==1:
             self.__slabvdl()
+
+
         Col_selfweight=[]
         Beam_selfweight=[]        
         col_odl= []
@@ -965,14 +976,14 @@ class _RCFforenvelop():
             if self.__slabload_there==1:
                 floor_load_story= self.__floor_loads.loc[self.__floor_loads['Story']==i]
             
-                #.to_frame().T converts series to Dataframe
+                #.to_frame().T converts series to DataFrame
                 floor_sum= floor_load_story.sum().to_frame().T
                 floor_sum.index=[i] 
-                #.to_frame().T converts series to Dataframe
+                #.to_frame().T converts series to DataFrame
 
                 Loadings_floor= pd.concat([Loadings_floor, floor_sum ])        
         
-                self.__FL=Loadings_floor
+                self.floor_loading = Loadings_floor
 
         member_sw= self.__column_Lumploads['Self-Weight(kN)']+ self.__beam_Lumploads['Self-Weight(kN)']
         member_odl= self.__column_Lumploads['Other-Dead-Loads']+ self.__beam_Lumploads['Other-Dead-Loads']
@@ -996,15 +1007,20 @@ class _RCFforenvelop():
             TSL_LL= Loadings_floor.loc[:,'LL(kN)']
 
             self.story_lumploads = pd.concat([TSL_self_weight,TSL_other_dead_load,TSL_LL, story_ht_pd],axis=1)
+            self.column_Lumploads = self.__column_Lumploads
+            self.beam_Lumploads = self.__beam_Lumploads
+             
         else:
             TSL_self_weight= Loadings_members.loc[:,'Self-Weight(kN)']
             TSL_other_dead_load= Loadings_members.loc[:,'Other-Dead-Loads']
 
             self.story_lumploads = pd.concat([TSL_self_weight,TSL_other_dead_load,story_ht_pd],axis=1)
+            self.column_Lumploads = self.__column_Lumploads
+            self.beam_Lumploads = self.__beam_Lumploads
 
     def __slabvdl(self):
-        dlvdl= pd.DataFrame()           # DEAD LOAD DATAFRAME for slab
-        llvdl= pd.DataFrame()           # LIVE LOAD DATAFRAME for slab
+        dlvdl= pd.DataFrame()           # DEAD LOAD DataFrame for slab
+        llvdl= pd.DataFrame()           # LIVE LOAD DataFrame for slab
         slabd= self.slab_pd.copy()
 
         slab_name= slabd.index.unique().tolist()
@@ -1021,12 +1037,14 @@ class _RCFforenvelop():
         for j in range(0,len(slab_name)):
             sb= slabd.loc[slab_name[j]]
             sb.index= [i for i in range (len(sb))]
+
             for i in range (0,len(sb)):
                 
                 L= int (sb.L[i])
                 H = int(sb.Height_l[i])
-                w= -(self.load_combo.iloc[0,0]*((-self.__concrete_densitySlab*(sb.slab_t[i])/1000) + (sb.FF[i])+ (sb.WP[i]))*H)
-                wl= -(self.load_combo.iloc[0,1]*sb.LL[i]*H)
+                w= -(self.load_combo.iat[0,0]*((-self.__concrete_densitySlab*(sb.slab_t[i])/1000) + (sb.FF[i])+ (sb.WP[i]))*H)
+
+                wl= -(self.load_combo.iat[0,1]*sb.LL[i]*H)
 
                 if sb.Type_loading[i]==1:
                     Ra= w*L/4
@@ -1098,7 +1116,7 @@ class _RCFforenvelop():
         self.__llvdl= llvdl
 
     def __stiffnessbeam(self):   
-
+         
         cords= self.__cords_member_order.to_numpy()
         nodes= self.__nodes_details.to_numpy()
         tn= self.tn                               #self.nodes()
@@ -1112,7 +1130,7 @@ class _RCFforenvelop():
         
         KK_Local= np.empty((tm,12,12))
         
-        m_L= mem_load.to_numpy()
+        m_L= (mem_load.to_numpy())     #self.load_combo.iat[0,0]*
         local_forces=np.array([])
         mmm=0
         ebc= np.array([[],[],[],[],[],[],[],[],[],[],[],[]])      # All the elments matrix in ebc     
@@ -1121,20 +1139,20 @@ class _RCFforenvelop():
         
         member_no= 0
         mem_index= self.member_list
-
+        self.len_beam=[]
         for ii in range(0,tm*2,2):
             
             mem_name= mem_index[member_no]
 
             position= int(ii/2) 
 
-            A = self.__member_details.iloc[position,8]
-            Iz = self.__member_details.iloc[position,9]
-            Iy = self.__member_details.iloc[position,10]
-            J = self.__member_details.iloc[position,11] 
-            E = self.__member_details.iloc[position,12]
-            G = self.__member_details.iloc[position,17]
-        
+            A = self.__member_details.iat[position,8]
+            Iz = self.__member_details.iat[position,9]
+            Iy = self.__member_details.iat[position,10]
+            J = self.__member_details.iat[position,11] 
+            E = self.__member_details.iat[position,12]
+            G = self.__member_details.iat[position,17]
+
             i=ii
         
             h=ii+1
@@ -1153,6 +1171,7 @@ class _RCFforenvelop():
             k9 = 2*E*Iy/L;
             k10 = G*J/L;
         
+
             k = np.array ([[k1, 0, 0, 0, 0, 0, -k1, 0, 0, 0, 0, 0],
                            [0, k2, 0, 0, 0, k3, 0, -k2, 0, 0, 0, k3],
                            [0, 0, k6, 0, -k7, 0, 0, 0, -k6, 0, -k7, 0],
@@ -1213,7 +1232,6 @@ class _RCFforenvelop():
             
             self.__local_stiffness[member_no,:,:]= k
             KK_Local[eleno,:,:]= Kl
-
         
             qx= -m_L[mmm,0]
             qy= -m_L[mmm,1]
@@ -1257,6 +1275,7 @@ class _RCFforenvelop():
                     my2= (qz*L*L)/12
                     mz2= ((qy*L*L)/12) + dl.Mb + ll.Mb   
 
+
                 else:
                     fx1= (qx*L)/2       #mmm= member with two nodes and m_L is member load
                     fy1= (qy*L)/2
@@ -1271,10 +1290,50 @@ class _RCFforenvelop():
                     mx2= 0                  #Torsion value Mx
                     my2= (qz*L*L)/12
                     mz2= (qy*L*L)/12        
-                        
+            
+
+            # if self.__point_L==True:
+            #     if (self.__point_loads.index == mem_name).any():
+            #         pl= (self.__point_loads [self.__point_loads.index == mem_name])
+
+            #         for pf in range (0,len(pl)):
+            #             pqx= 0
+            #             pqy= 0
+            #             pqz= 0
+
+            #             aaa= pl.iat[pf,2]
+            #             bbb= L- aaa
+            #             if pl.iat[pf,1] == 'x':
+            #                 pqx= pl.iat[pf,0]
+
+
+            #             if pl.iat[pf,1] == 'y':
+            #                 pqy= pl.iat[pf,0]*1000
+            #                 PRay= -pqy* (bbb*bbb)*((3*aaa)+ bbb)/ (L*L*L) 
+            #                 PRby= -pqy* (aaa*aaa)*((3*bbb)+ aaa)/ (L*L*L)
+                            
+            #                 PMay= -pqy* (bbb*bbb)*(aaa)/ (L*L) 
+            #                 PMby= -pqy* (aaa*aaa)*(bbb)/ (L*L)
+
+            #                 fy1= fy1 + PRay
+            #                 fy2= fy2 + PRby
+            #                 mz1= mz1 + PMay 
+            #                 mz2= mz2 + PMby  
+
+            #             if pl.iat[pf,1] == 'z':
+            #                 pqz= pl.iat[pf,0]*1000
+            #                 PRaz= -pqz* (bbb*bbb)*((3*aaa)+ bbb)/ (L*L*L) 
+            #                 PRbz= -pqz* (aaa*aaa)*((3*bbb)+ aaa)/ (L*L*L)
+            #                 PMaz= -pqz* (bbb*bbb)*(aaa)/ (L*L) 
+            #                 PMbz= -pqz* (aaa*aaa)*(bbb)/ (L*L)
+
+            #                 fz1= fz1 + PRaz
+            #                 fz2= fz2 + PRbz
+            #                 my1= my1 + PMaz
+            #                 my2= my2 + PMbz
         
             local_nodal_f=np.array([ fx1,fy1,fz1, mx1,-my1,mz1, fx2,fy2,fz2, mx2,my2,-mz2 ])                #Torsion value Mx
-
+            
             #global_nodal_f is actually in Global Coordinates 
             self.__lnf[member_no,:,0] = local_nodal_f
             
@@ -1332,54 +1391,56 @@ class _RCFforenvelop():
         self.__K_Local= KK_Local
         
 
-
     def __solution(self):           
+        # ***This function caluclates the GLobal Forces and Displacements***
          
         forcevec= np.transpose(self.__forcesnodal.to_numpy().flatten())
         dispvec= np.transpose(self.__boundarycondition.to_numpy().flatten())  
         global_forces= self.__global_forces
+        
         eq1= np.array([])    # Vector to find forces
         eq2= np.array([])    # Vector to find displacements
         tn = self.tn
         Kg = self.__K_Global
 
         if self.tm==1:
-            if forcevec[3]==0 and forcevec[9] == 0:
-                dispvec[3]=0
-                dispvec[9]=0
-
+            if np.isin(dispvec,0).any():     
+                if forcevec[3]==0 and forcevec[9] == 0:
+                    dispvec[3]=0
+                    dispvec[9]=0
+                
         for i in range(tn*6):
         
             if dispvec[i]==0:
                 eq1= np.hstack((eq1,i))  #storing position of known displacement
             else:
                 eq2= np.hstack((eq2,i))  #storing position of unknown displacement
-           
+
+
         # Forming new Equilibrium matrix's 
         ln = np.size(eq2)
         Kg1 = np.zeros([ln,ln])
         F2 = np.zeros(ln)
         local_member_nodal_f = np.zeros(ln)
 
-    
+
         for i in range(ln):
             for j in range(ln):
                 Kg1[i,j]= Kg[eq2[i].astype(int),eq2[j].astype(int)]
                 F2[i] = forcevec[eq2[i].astype(int)]
             local_member_nodal_f[i] = global_forces[eq2[i].astype(int)]
 
+
         if (not np.any(eq1)) == False:
             D2 = (np.linalg.inv(Kg1))@(F2-local_member_nodal_f)
         else:
             D2 = np.zeros([len(eq2)])
-
-
         
         for i in range(ln):
             dispvec[eq2[i].astype(int)]=D2[i]
     
     
-        F1 = global_forces+(Kg@dispvec)     #F1 = Forces+(Kg@dispvec)
+        F1 = global_forces+(Kg@dispvec) 
     
 
         forces= F1.reshape(tn,6)
@@ -1395,11 +1456,13 @@ class _RCFforenvelop():
         nodes= self.__nodes_details.to_numpy()
         q= (mem_l.to_numpy())      #in Kn
 
+        self.__ds= []
         np.set_printoptions(precision = 3, suppress = True)  #surpressing exponential option while printing
         
         tm= self.tm
         BM_SFmat= [] #3D array to store BM and SF variation x= Member, y=value at some distance and z= xx,Vx,Vy,My,Mz
          
+    
         mem_names = self.member_list
     
         member_nodes= np.empty([tm,2])
@@ -1435,6 +1498,7 @@ class _RCFforenvelop():
 
 
             nodalForces= (kl_new@(T_mat@ds)) + lf_new
+
             nodalForces= nodalForces/1000        #converting into kN
             #------------------------------------------------------------------#
 
@@ -1451,6 +1515,7 @@ class _RCFforenvelop():
             # ** SF AND BM in LOCAL CORDINATE SYSTEM
 
             Vy= (nodalForces[1]+(q[i,1]*xx)).reshape((-1,1))
+            
             Vx= ((nodalForces[0])*jjj).reshape((-1,1))
             Vz= (nodalForces[2]+(q[i,2]*xx)).reshape((-1,1))
             
@@ -1458,6 +1523,74 @@ class _RCFforenvelop():
             Mz = (nodalForces[5]-(nodalForces[1]*xx)-(q[i,1]*((xx**2)/2))).reshape((-1,1))
             Mx= np.ones(int(parts+1)).reshape((-1,1))* nodalForces[3]
             
+
+            # if self.__point_L==True: 
+                
+            #     if ((self.__point_loads.index == mem_names[i]).any()):
+            #         pl= (self.__point_loads [self.__point_loads.index == mem_names[i]])
+            #         pl= pl.sort_values(by=['Distance (m)'])
+            #         point_list= []
+            #         point_loads=[]
+            #         direction= []
+            #         for pf in range (0,len(pl)):
+            #             point_list.append(pl.iat[pf,2])
+            #             point_loads.append(pl.iat[pf,0])
+            #             direction.append(pl.iat[pf,1])
+
+            #         #point_list.append(L)
+ 
+            
+            #         for val in range (len(point_list)):
+
+            #             PVy0= np.array([])
+            #             PMy0= np.array([])
+            #             PVz0= np.array([])
+            #             PMz0= np.array([])
+
+            #             xxxF= xx[xx<=point_list[val]]
+            #             xxxL= xx[xx>point_list[val]]
+
+            #             #fff= np.zeros(len(xxxF))
+            #             kkk= np.ones(len(xxxL))
+            #             P1= np.zeros(len(xxxF))
+            #             M1= np.zeros(len(xxxF))
+
+            #             if direction[val] == 'y':
+            #                 Pforcey= point_loads[val]
+                            
+            #             else:
+            #                 Pforcey= 0
+
+            #             if direction[val] == 'z':
+            #                 Pforcez= point_loads[val]
+            #             else:
+            #                 Pforcez= 0
+
+            #             P2y= Pforcey*kkk
+            #             P2z= Pforcez*kkk
+
+            #             M2y= P2z* (point_list[val] - xxxL)
+            #             M2z= P2y* (point_list[val] - xxxL)
+
+            #             PVy= np.hstack((P1,P2y))  
+            #             PMy1 = np.hstack((M1,M2y))
+                            
+            #             PVz= np.hstack((P1,P2z))  
+            #             PMz1 = np.hstack((M1,M2z))
+
+
+
+            #             PVy0= np.hstack((PVy0,PVy))
+            #             PMz0= np.hstack((PMz0,PMz1))
+
+            #             PVz0= np.hstack((PVz0,PVz))
+            #             PMy0= np.hstack((PMy0,PMy1))
+                    
+            #             Vy= Vy + PVy0.reshape((-1, 1))   
+            #             Vz= Vz + PVz0.reshape((-1, 1))
+            #             Mz= Mz + PMz0.reshape((-1, 1))
+            #             My= My + PMy0.reshape((-1, 1))
+
 
             if self.__slabload_there==1:
                 if (sb.index == mem_names[i]).any():
@@ -1546,6 +1679,7 @@ class _RCFforenvelop():
                             Vy= Vy + Vy_vdl
                             Mz= Mz + Mz_vdl
 
+
         #---------------------------------------------------------------------#
             xx=xx.reshape((-1,1))
             mem_BMSF_val=np.hstack((xx,Vx,Vy,Vz,Mx,My,Mz))      
@@ -1555,7 +1689,8 @@ class _RCFforenvelop():
         
         self.__SF_BM= BM_SFmat              # Shear Force and Bending Moment DATA 
 
-    
+
+
     @ray.remote
     def __defCal(E,I, d1,d2,L, bm):
     
@@ -1733,6 +1868,7 @@ class _RCFforenvelop():
         
         self.axial_forces_pd= pd.DataFrame({"Axial Loads": axial_forces} ,index= self.member_list)
 
+    
         if self.tm > 2:
             maxforces_pd.loc[:,:,'+ve']= maxforces_pd.loc[:,:,'+ve'].where(maxforces_pd.loc[:,:,'+ve']>=0, "NA") 
             
@@ -1746,6 +1882,7 @@ class _RCFforenvelop():
         R=  self.__seismic_def['R'].item()
         I= self.__seismic_def['I'].item()
         Sag= self.__seismic_def['Sag'].item()
+
         if direction=='x' or direction=='-x':
             base_nodes= self.__nodes_details.loc[self.__nodes_details.y== min(self.__nodes_details.y)]
             d= max(base_nodes.x) - min(base_nodes.x)
@@ -1760,6 +1897,8 @@ class _RCFforenvelop():
             else:
                 T= (0.09*h)/np.sqrt(d)
             self.__seismic_def['Time Period']= T
+        else:
+            T = self.__seismic_def['Time Period'].item()
 
         if Sag ==0:
             if self.__seismic_def['Soil Type'].item()==1: #Hard Soil
@@ -1784,6 +1923,8 @@ class _RCFforenvelop():
                 if T>4:
                     Sag= 0.42                    
             self.__seismic_def['Sag']= Sag
+        else:
+            T = self.__seismic_def['Sag'].item()
 
         self.__seismicD= self.__seismic_def.copy()
 
@@ -1822,7 +1963,7 @@ class _RCFforenvelop():
         Vi[0]= Vb
         self.__SeismicShear= pd.DataFrame({"Seismic Shear": Vi})
         self.__SeismicShear.index.name= "Floor"
-        
+
         
     def __drift(self):
         self.__ASD= pd.DataFrame()
@@ -1850,13 +1991,18 @@ class _RCFforenvelop():
         self.__ASD.index= floor
         self.__ASD.rename_axis('Floor', inplace= True)
 
+
     def __resetRC(self):
         self.__nodes_details= self.joint_details.copy()
         self.__member_details= self.mem_details.copy()     
         self.__forcesnodal= self.nodalforces.copy()  
         self.__boundarycondition= self.boundcond.copy() 
+        
+        
 
     def preP(self):
+        if self.__PreP_status== True:
+            pass
 
         self.__PreP_status = True
 
@@ -1868,6 +2014,7 @@ class _RCFforenvelop():
         if self.tm > 300:
             self.__arrange_all()
 
+
         if self.autoflooring == True:
             self.__autoflooring()
 
@@ -1875,17 +2022,22 @@ class _RCFforenvelop():
         if self.__slabload_there==1 :
             self.__slab_beam_load_transfer()
 
+
         self.joint_details= self.__nodes_details.copy()
         self.mem_details= self.__member_details.copy()     
         self.nodalforces= self.__forcesnodal.copy()  
-        self.boundcond= self.__boundarycondition.copy() 
-   
+        self.boundcond= self.__boundarycondition.copy()
+
+
     def RCanalysis(self):
+        if self.__PreP_status == False:
+            raise Exception("Perform Pre Processing of the structure using method 'preP'")
 
         self.__Analysis_performed= True
 
         self.__properties()
         self.__member_detailing()
+
 
         if self.__slabload_there==1:
             self.__floorLoading()
@@ -1917,19 +2069,16 @@ class _RCFforenvelop():
                 direction= 'x'
                 seismic_load_factor= 0                    
 
-
             self.__EQS(direction, seismic_load_factor)            
 
         self.__stiffnessbeam()
 
         self.__solution()
 
-
         self.__internal_forces_calculation()
-        
 
         self.__CalDeflections()
-        
+
         self.__calMaxmemF()
 
         if self.__seismic_def_status == True:
@@ -1939,22 +2088,36 @@ class _RCFforenvelop():
 
     def model3D(self):
 
+        if self.__PreP_status!= True:
+            raise Exception ("Preform Pre-processing first")
+
+
         xx= self.__nodes_details.to_numpy()
         nodetext= self.__nodes_details.index.to_numpy()
         xxx= self.__cords_member_order.to_numpy()
         tmm=len(xxx)
-        Model = go.Figure()
-        
-        Model.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="top right"))
+        fig1= go.Figure()
+        fig2= go.Figure()
+        fig3= go.Figure()
+        fig4= go.Figure()
+        fig5= go.Figure()
+
+        fig1.add_trace(go.Scatter3d(x=xx[:,2],y=xx[:,0],z=xx[:,1],mode='markers+text', text=nodetext,textposition="middle right"))
         kk=0
         mem_index= self.member_list
-        anno=[]
+
+        mtcs = np.array([[],[],[]]).T
+
+        ftcs = np.array([[],[],[]]).T
+        
+        mem_text=[]
+        floor_text=[]
+
         for i in range(0,tmm,2):
-            
-            Model.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines',      
+            fig2.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines+text',      
                 line=dict(
                         color="black",                # set color to an array/list of desired values
-                        width=10)))
+                        width=3),name= f"member {kk+1}" ))
 
             ax= xxx[i,2].item() 
             bx= xxx[i+1,2].item() 
@@ -1963,29 +2126,23 @@ class _RCFforenvelop():
             az= xxx[i,1].item() 
             bz= xxx[i+1,1].item() 
 
-
-            x_annotate=((ax+bx)/2)+0.1
-            y_annotate=((ay+by)/2)+0.1
-            z_annotate=((az+bz)/2)+0.1
+            x_anno=((ax+bx)/2)
+            y_anno=((ay+by)/2)
+            z_anno=((az+bz)/2)
             
-            #(x_annotate, y_annotate, z_annotate)
-            a1= dict(
-            showarrow=False,
-            x=x_annotate,
-            y=y_annotate,
-            z=z_annotate,
-            text=f"Member {mem_index[kk]}",
-            font=dict(
-                color="black",
-                size=8
-            ),)
+            mtc = np.array([[x_anno],[y_anno],[z_anno]]).T
 
-            anno.append(a1)
+            mtcs= np.vstack((mtcs,mtc))
+            mem_text.append(f"{mem_index[kk]}")
             kk= kk+1
+
+        fig4.add_trace(go.Scatter3d(x=mtcs[:,0],y=mtcs[:,1],z=mtcs[:,2],mode='text', text=mem_text,textposition="middle right"))
+
         
         if self.__slabload_there==1:
             sb= self.__slab_details
             for i in sb.index:
+
                 n1= sb.at[i,'Node1']
                 n2= sb.at[i,'Node2']
                 n3= sb.at[i,'Node3']
@@ -1993,46 +2150,98 @@ class _RCFforenvelop():
                 node= self.__nodes_details.loc[[n1,n2,n3,n4]]
                 z= np.empty([5,5]) 
                 z[:,:]= node['y'].values[0]   
-                Model.add_trace(go.Surface(x=node['z'], y=node['x'], z=z,opacity=0.2,showscale=False))        
+                fig3.add_trace(go.Surface(x=node['z'], y=node['x'], z=z,opacity=0.2,showscale=False))        
 
                 x_an=node["z"].mean()
                 y_an=node["x"].mean()
-                z_an=node["y"].mean() +0.5
+                z_an=node["y"].mean()
             
-                a2= dict(
-                    showarrow=False,
-                    x=x_an,
-                    y=y_an,
-                    z=z_an,
-                    text=f"Floor {i}",
-                    font=dict(
-                    color="black",
-                    size=8
-                ),)
-                
-                anno.append(a2)
-                #floor_anno.append(a2)
+                ftc = np.array([[x_an],[y_an],[z_an]]).T
 
+                ftcs= np.vstack((ftcs,ftc))
+                floor_text.append(f"Floor {i}")
+                
+
+        fig5.add_trace(go.Scatter3d(x=ftcs[:,0],y=ftcs[:,1],z=ftcs[:,2],mode='text', text=floor_text,textposition="top center"))                
+
+
+        f1 = [trace for trace in fig1.select_traces()]
+        f2 = [trace for trace in fig2.select_traces()]
+        f3 = [trace for trace in fig3.select_traces()]
+        f4 = [trace for trace in fig4.select_traces()]
+        f5 = [trace for trace in fig5.select_traces()]
+
+        button1= [True if i < (len(f1)+ len(f2)+ len(f3)) else False for i in range((len(f1)+ len(f2)+ len(f3) + len(f4)+ len(f5) ))]
+
+        button2= [False for _ in range(len(f1))] + [True for _ in range(len(f2))] + [False for _ in range(len(f3))] + [True for _ in range(len(f4))] + [False for _ in range(len(f5))]
+
+        button3= [False for _ in range(len(f1))] + [True for _ in range(len(f2))] + [True for _ in range(len(f3))] + [False for _ in range(len(f4))] + [True for _ in range(len(f5))]
+
+
+        Model=go.Figure(data=f1+f2+f3+f4+f5)
 
         Model.update_layout(
             scene=dict(
                 xaxis=dict(type="-"),
                 yaxis=dict(type="-"),
-                zaxis=dict(type="-"),
-                annotations=anno),)
+                zaxis=dict(type="-"),))
+
+        Model.update_layout(scene = dict(
+                    xaxis_title=' ',
+                    yaxis_title=' ',
+                    zaxis_title=' '),)
 
         Model.update_layout(scene = dict(xaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
                                    yaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
                                    zaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
              ))
+  
+        Model.update_layout(
+            updatemenus=[
+                dict(
+                    type = "buttons",
+                    direction = "left",
+                    buttons=list([
+                        dict(
+                            args=[{'visible': button1},],
+                            label="RC Model",
+                            method="update",
+                        ),
+                        dict(
+                            args=[{'visible': button2},],
+                            label="Member Ids",
+                            method="update"
+                        ),
+                        dict(
+                            args=[{'visible': button3},],
+                            label="Floors IDs",
+                            method="update"
+                        )
+                    ]),
+                    pad={"r": 10, "t": 10},
+                    showactive=True,
+                    x=0.11,
+                    xanchor="left",
+                    y=1.1,
+                    yanchor="middle"
+                ),
+            ]
+        )
 
-        Model.update_layout(height=800, width=1600)
+        Model.update_layout(height=1000, width=1600)
 
+        # fw= go.FigureWidget(Model)
         return (Model)
 
 
 
     def sfbmd(self, element):
+
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+        #pio.renderers.default = rend_type
+
+
 
         pos = self.member_list.index(element)
         xx = self.__SF_BM[pos][:,0].round(decimals = 3)
@@ -2040,7 +2249,6 @@ class _RCFforenvelop():
         sfz= self.__SF_BM[pos][:,3].round(decimals = 3) 
         bmy= self.__SF_BM[pos][:,5].round(decimals = 3)
         bmz= self.__SF_BM[pos][:,6].round(decimals = 3)
-        
         parts= len(xx)
         yyb= np.zeros(parts)
 
@@ -2134,7 +2342,7 @@ class _RCFforenvelop():
             ),row=2, col=2)
 
         fig.update_layout(height=1200, width=1200, title_text= f"Shear Force & Bending Moment Diagram of Member {element}")
-        
+
         # Update xaxis properties
         fig.update_xaxes(title_text= "<b>Distance from node to node (m)</b>", row=1, col=1)
         fig.update_xaxes(title_text= "<b>Distance from node to node (m)</b>", row=1, col=2)
@@ -2151,6 +2359,9 @@ class _RCFforenvelop():
 
 
     def defL(self, element):
+
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
 
         defl= self.__Deflections_local
         pos = self.member_list.index(element)
@@ -2223,20 +2434,21 @@ class _RCFforenvelop():
 
         fig.update_layout(height=1200, width=1200, title_text= f"Deflection of a Member {element} in Local Coordinate System")
         
-        
+        # Update xaxis properties
         fig.update_xaxes(title_text= "<b>Distance from node to node (m)</b>", row=1, col=1)
         fig.update_xaxes(title_text= "<b>Distance from node to node (m)</b>", row=2, col=1)
         fig.update_xaxes(title_text= "<b>Distance from node to node (m)</b>", row=3, col=1)
 
-        
+        # Update yaxis properties
         fig.update_yaxes(title_text="<b>Deflection(mm)</b>",  row=1, col=1)   
         fig.update_yaxes(title_text="<b>Deflection(mm)</b>", row=2, col=1)
         fig.update_yaxes(title_text="<b>Deflection(mm)</b>", row=3, col=1)
         return(fig)
 
-
-
     def defG(self, element):
+
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
 
         defl= self.__Deflections_G
         pos = self.member_list.index(element)
@@ -2308,7 +2520,7 @@ class _RCFforenvelop():
             ),row=3, col=1)
 
 
-        fig.update_layout(height=1200, width=1200, title_text=f"Deflection of a Member {element} in Global Coordinate System")
+        fig.update_layout(height=1200, width=1200, title_text=f"Deflection Of a Member {element} in Global Coordinate System")
         
         # Update xaxis properties
         fig.update_xaxes(title_text= "<b>Distance from node to node (m)</b>", row=1, col=1)
@@ -2322,6 +2534,9 @@ class _RCFforenvelop():
         return(fig)
 
     def aniDef(self):
+
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
 
         x1=self.__Framez3D
         y1=self.__Framex3D
@@ -2408,6 +2623,9 @@ class _RCFforenvelop():
 
     def def3D(self):
 
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+
         xx= self.__nodes_details.to_numpy()
         xxx= self.__cords_member_order.to_numpy()
         xxx1= self.__deflected_shape
@@ -2418,7 +2636,7 @@ class _RCFforenvelop():
             Model.add_trace(go.Scatter3d(x=xxx[i:i+2,2],y=xxx[i:i+2,0],z=xxx[i:i+2,1], mode='lines',      
                 line=dict(
                         color="black",                # set color to an array/list of desired values
-                        width=10)))
+                        width=1)))
         
         Model.update_layout(scene = dict(xaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
                                    yaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
@@ -2429,12 +2647,17 @@ class _RCFforenvelop():
             Model.add_trace(go.Scatter3d(x=xxx1[i][:,2],y=xxx1[i][:,0],z=xxx1[i][:,1], mode='lines',      
                 line=dict(
                         color="red",                # set color to an array/list of desired values
-                        width=10)))
+                        width=1)))
+
+
 
         Model.update_layout(height=800, width=800, title_text=f"Deflection of Structure")
         return(Model)
 
-    def reactions(self):     
+    def reactions(self):      
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+
         GForces= self.__GForces.copy()
         GForces= GForces /1000       #converting into kN from N
         GForces = np.round(GForces.astype(np.double),3)
@@ -2443,7 +2666,10 @@ class _RCFforenvelop():
         react= Forcepd.loc[self.baseN.index] 
         return react.sort_index()
 
-    def Gdisp(self):        
+    def Gdisp(self):        # Returns Diaplacement GLOBAL
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+        
         dispmat1= self.__GDisplacement.copy()
         dispmat1[:,0:3] = (dispmat1[:,0:3])*1000    # converting into mm
         dispmat1 = np.round(dispmat1.astype(np.double),3)
@@ -2451,79 +2677,98 @@ class _RCFforenvelop():
         return Disppd
     
     def GlobalK(self):
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+
         return self.__K_Global
 
-    def LocalK(self,element= None):  
+    def LocalK(self,element= None):
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+        
         if element==None:
             return self.__K_Local
         else:
             pos = self.member_list.index(element)
             return self.__K_Local[pos, :, :]
 
-    def beamsD(self):  
+
+    def beamsD(self):
         bd= self.beams_detail.copy()
 
-        # if self.__Analysis_performed== True:
-        #     col= ['Node1', 'Node2', 'Story', 'x (m)', 'z (m)', 'Continous_at_Node1',
-        # 'Continous_at_Node2', 'L (m)', 'b (mm)', 'd (mm)', 'Area (m2)', 'Iz (m4)', 'Iy (m4)', 'J (m4)',
-        # 'Stiffness_Factor']
-        #     bd.columns= col
-
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")       
         return(bd)
 
     def columnsD(self):
         cd= self.columns_detail.copy()
 
-        # if self.__Analysis_performed== True:
-        #     col= ['Node1', 'Node2', 'Story', 'L (m)', 'b (mm)', 'd (mm)', 'Area (m2)', 'Iz (m4)', 'Iy (m4)', 'J (m4)',
-        # 'Stiffness_Factor', 'Beta1', 'Beta2', 'Lef_coef', 'Lef (m)', 'Type']
-        #     cd.columns= col         
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+
         return(cd) 
 
-    def nodesD(self):     
+    def nodesD(self):
         nd= self.nodes_detail.copy()
 
-        # if self.__Analysis_performed== True:
-        #     col= ['Floor', 'Height (m)', 'Beam1 (ID)', 'Beam2 (ID)', 'Beam3 (ID)', 'Beam4 (ID)', 'Col1 (ID)', 'Col2 (ID)',
-        # 'Stiffness']
-        #     nd.columns= col
-
-        return(nd)  
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+    
+        return(nd) 
     
     def Sdrift(self):
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+            
         if self.__seismic_def_status == False:
             return ("Seismic analysis has not been used")
         else:
             return (np.round(self.__ASD,5))
     
     def seismicS(self):
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+            
+
         if self.__seismic_def_status== False:
             return ("Seismic analysis has not been used")
         else:
             return (self.__SeismicShear)
         
     def memF(self):
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
         return (self.__SF_BM)
     
 
-    def MaxmemF(self):
+    def maxmemF(self):
         return (self.__maxF_pd)
 
     def defLD(self):
+        if self.__Analysis_performed== False:
+            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+            
+        
         return (self.__Deflections_local)    
     
     def defGD(self):
+        if self.__Analysis_performed== False:
+            exit("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
+        
         return (self.__Deflections_G)
-
+    
     def Mproperties(self):
         return (self.__Mproperties)
 
     def floorD(self):
+        if self.__PreP_status == False:
+            raise Exception("Perform Pre-Processing of the structure using method 'preP' to get complete floor details")
+
         if self.__slabload_there== False:
             return ("No Floor has been assigned")
         else:
             return (self.__slab_details)
-        
+
     def seismicD(self):
         cols= ["Zone Factor (Z)", "Importance Factor (I)", "Response Reduction Factor (R)",  "Design Accelaration Coefficient (Sag) based on Soil Type", "Damping (%)", "Soil Type", "Time Period (sec)", "Seismic Acceleration (Ah)", "Seismic Weight (kN)" ]
 
@@ -2531,48 +2776,71 @@ class _RCFforenvelop():
             if (self.load_combo.iloc[0, 2:] >0).any():
                 self.__seismicD.columns= cols
                 return (self.__seismicD)
-            
 
     def changeFL(self, floor=None,thickness= None, LL=None, FF=None, WP=None, delf=None ):
 
+        if self.__PreP_status == False:
+            raise Exception("Perform Pre-Processing of the structure using method 'preP' before changing floor details")
+
         if floor==None:
-            if thickness is not None:
-                self.__slab_details[["Thickness(mm)"]]= thickness
-
-            if FF is not None:
-                self.__slab_details[["FF(kN/m2)"]]= FF
-
-            if LL is not None:
-                self.__slab_details[["LL(kN/m2)"]]= LL
-
-            if WP is not None:
-                self.__slab_details[["Waterproofing(kN/m2)"]]= WP
-
-            if thickness== None and FF==None and LL==None and WP==None and delf==None:
-                exit("Nothing has been passed to perform changes")
-
-        if floor is not None:
-            if floor.dtype in ["int32","int64"]:
+            if self.__slabload_there== True:
                 if thickness is not None:
-                    self.__slab_details.loc[floor, ["Thickness(mm)"]]= thickness
+                    self.__slab_details[["Thickness(mm)"]]= thickness
 
                 if FF is not None:
-                    self.__slab_details.loc[floor, ["FF(kN/m2)"]]= FF
+                    self.__slab_details[["FF(kN/m2)"]]= FF
 
                 if LL is not None:
-                    self.__slab_details.loc[floor, ["LL(kN/m2)"]]= LL
+                    self.__slab_details[["LL(kN/m2)"]]= LL
 
                 if WP is not None:
-                    self.__slab_details.loc[floor, ["Waterproofing(kN/m2)"]]= WP
+                    self.__slab_details[["Waterproofing(kN/m2)"]]= WP
+
+                if thickness== None and FF==None and LL==None and WP==None and delf==None:
+                    exit("Nothing has been passed to perform changes")
+
+        if floor is not None:
+            if self.__slabload_there== True:
+                if floor.dtype in ["int32","int64"]:
+                    if thickness is not None:
+                        self.__slab_details.loc[floor, ["Thickness(mm)"]]= thickness
+
+                    if FF is not None:
+                        self.__slab_details.loc[floor, ["FF(kN/m2)"]]= FF
+
+                    if LL is not None:
+                        self.__slab_details.loc[floor, ["LL(kN/m2)"]]= LL
+
+                    if WP is not None:
+                        self.__slab_details.loc[floor, ["Waterproofing(kN/m2)"]]= WP
         
         if delf is not None:
-            self.__slab_details.drop(delf, inplace = True)
+            if self.__slabload_there== True:
+                self.__slab_details.drop(delf, inplace = True)
 
         self.slab_pd= None
         self.__slab_beam_load_transfer()
 
         if self.__Analysis_performed== True:
             self.__resetRC()
+        
+        self.__Analysis_performed= False
+        
+
+    def changeLC(self, loadC):   
+        self.load_combo= loadC.copy()
+        self.load_combo.columns= ["Dead_Load","Live_Load","EQX","-EQx","EQZ","-EQZ"]
+        self.load_combo.fillna(0,inplace=True)
+        self.__Analysis_performed= False
+
+    def modelND(self):
+        return (self.__ndd)
+    
+    def modelMD(self):
+        return (self.__mdd)
+    
+    def modelBCD(self):
+        return (self._bcd)
 
 
     def getGlobalVariables(self):
