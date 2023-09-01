@@ -3936,7 +3936,7 @@ class RCFenv():
             self.Mproperties= pd.DataFrame({ "Type": TypeM ,"Material": NameM, "Grade M-": gradeM, "Density (kN/m3)": densityM, "Young Modulus (kN/m2)": EM, "Poisson's Ratio (mu)": muM, "Thermal Coefficient (alpha)": alphaM, "Critical Damping": critM, "Modulus of Rigidity (kN/m2)": GM}, index= prop_index)
 
 
-        self.__OB=  [_RCFforenvelop.remote(self.nodes_details, self.member_details, self.boundarycondition, forcesnodal= self.forcesnodal, autoflooring= self.autoflooring, slab_details= self.slab_details, seismic_def= self.seismic_def, self_weight= self.self_weight, infillwall= self.infillwall, properties= self.Mproperties, col_stablity_index= self.col_stablity_index, load_combo= self.load_combo.iloc[[i]] ) for i in range (len(load_combo)) ]
+        self.__OB=  [_RCFforenvelop.remote(self.nodes_details, self.member_details, self.boundarycondition, forcesnodal= self.forcesnodal, autoflooring= self.autoflooring, slab_details= self.slab_details, seismic_def= self.seismic_def, self_weight= self.self_weight, infillwall= self.infillwall, properties= self.Mproperties, col_stablity_index= self.col_stablity_index, load_combo= self.load_combo.iloc[[i]] ) for i in range (len(load_combo))]
 
 
         self.LClist= [f"LC{i}" for i in(self.load_combo.index)]
