@@ -1605,7 +1605,7 @@ class RCF():
                     dl= ((self.__dlvdl [self.__dlvdl.index == mem_name])*1000).sum() # CHanging from kn to N
                     ll= ((self.__llvdl [self.__llvdl.index == mem_name])*1000).sum()
                     
-                    fx1= (qx*L)/2       #mmm= member with two nodes and m_L is member load
+                    fx1= (qx*L)/2        #mmm= member with two nodes and m_L is member load
                     fy1= ((qy*L)/2) + dl.Ra + ll.Ra
                     fz1= (qz*L)/2
                     mx1= 0                  #Torsion value Mx
@@ -1843,6 +1843,11 @@ class RCF():
 
             nodalForces= (kl_new@(T_mat@ds)) + lf_new
 
+            if mem_names[i] == 47:
+                self.checkNF= nodalForces
+                self.part1= (kl_new@(T_mat@ds))
+                self.part2= lf_new
+
             nodalForces= nodalForces/1000        #converting into kN
             #------------------------------------------------------------------#
 
@@ -1862,7 +1867,7 @@ class RCF():
             
             Vx= ((nodalForces[0])*jjj).reshape((-1,1))
             Vz= (nodalForces[2]+(q[i,2]*xx)).reshape((-1,1))
-            
+
             My = (nodalForces[4] + (nodalForces[2]*xx)+ (q[i,2]*((xx**2)/2))).reshape((-1,1)) 
             Mz = (nodalForces[5]-(nodalForces[1]*xx)-(q[i,1]*((xx**2)/2))).reshape((-1,1))
             Mx= np.ones(int(parts+1)).reshape((-1,1))* nodalForces[3]

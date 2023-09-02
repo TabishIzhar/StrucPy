@@ -2,7 +2,9 @@ from StrucPy.RCFA import RCF
 from StrucPy.RCFA import RCFenv
 import pandas as pd
 import ray
+import time
 
+start = time.time()
 # importing modeling and data information from excel in dataframe
 framegen=  pd.read_excel('./InputFiles/Example1.xlsx', 'framegen', header = 0, index_col=0)
 seismic_defination= pd.read_excel('./InputFiles/Example2.xlsx', 'Seismic_Defination', header = 0, index_col=0)
@@ -32,9 +34,18 @@ floor_detail.drop(['Floor'], axis=1,inplace=True)
 # Creating RC frame object for structural anlaysis for different load combinations
 r2= RCFenv(nodes_details = nodes_details, member_details= member_details, boundarycondition= boundary_conditions , load_combo= load_combos, seismic_def= seismic_defination, slab_details= floor_detail)
 
+end1 = time.time()
 r2.preP()
+end2 = time.time()
+print ("Pre-Processing Time : ", (end2-end1))
 
+end3 = time.time()
 r2.RCanalysis()
+
+end4 = time.time()
+print ("Analysis Time : ", (end4-end3))
+
+print ("Total Time : ", (end4-start))
 
 # Generates envelop for maximum values of reactions
 getReactmax= r2.getReactmax()
@@ -59,6 +70,13 @@ LC6_seismicD= ray.get(obj[7].seismicD.remote())
 
 # Accessing story drift of load combination LC7
 LC7_seismicD= ray.get(obj[8].seismicD.remote())
+
+with pd.ExcelWriter('output_EXAMPLE2.xlsx') as writer:  
+    getReactmax.to_excel(writer, sheet_name='Max Reactions')
+    getReact.to_excel(writer, sheet_name='All reactions')
+    getNdismax.to_excel(writer, sheet_name='Nodal disp')
+    getEndMF.to_excel(writer, sheet_name='End Moments')
+    getMFdsg.to_excel(writer, sheet_name='Design Forces')
 
 
 
