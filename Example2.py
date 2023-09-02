@@ -1,9 +1,7 @@
 from StrucPy.RCFA import RCF
 from StrucPy.RCFA import RCFenv
 import pandas as pd
-import time
-
-start = time.time()
+import ray
 
 # importing modeling and data information from excel in dataframe
 framegen=  pd.read_excel('./InputFiles/Example1.xlsx', 'framegen', header = 0, index_col=0)
@@ -23,10 +21,6 @@ r1.changeFrame(member= 'beam', yudl= -10)
 r1.preP()
 r1.changeFL(thickness= 100, LL=0, FF=-10, WP=0)
 
-end1 = time.time()
-
-print ("Editing Done: ", end1- start)
-
 member_details= r1.modelMD()
 nodes_details= r1.modelND()
 boundary_conditions= r1.modelBCD()
@@ -38,44 +32,33 @@ floor_detail.drop(['Floor'], axis=1,inplace=True)
 # Creating RC frame object for structural anlaysis for different load combinations
 r2= RCFenv(nodes_details = nodes_details, member_details= member_details, boundarycondition= boundary_conditions , load_combo= load_combos, seismic_def= seismic_defination, slab_details= floor_detail)
 
-end2 = time.time()
-
-print ("Object Creation DOne : ", end2- end1)
-
-
 r2.preP()
 
-end3 = time.time()
+r2.RCanalysis()
 
-print ( "PreP: ", end3- end2)
+# Generates envelop for maximum values of reactions
+getReactmax= r2.getReactmax()
 
-# r2.RCanalysis()
+# Generates envelop for reactions from every load combinations
+getReact= r2.getReact()
 
-# end4 = time.time()
+# Generates envelop for maximum values of nodal displacements
+getNdismax= r2.getNdismax()
 
-# print ( "Analysis: ", end4- end3)
+# Generates envelop for nodal forces in all members
+getEndMF= r2.getEndMF()
 
-# # Generates envelop for maximum values of reactions
-# getReactmax= r2.getReactmax()
+# Generates envelop for all member forces that are to be used in designing.
+getMFdsg= r2.getMFdsg()
 
-# # Generates envelop for reactions from every load combinations
-# getReact= r2.getReact()
+# Getting ray actors for each load combinations
+obj= r2.getTLC()
 
-# # Generates envelop for maximum values of nodal displacements
-# getNdismax= r2.getNdismax()
+# Accessing seismic detail of load combination LC6
+LC6_seismicD= ray.get(obj[7].seismicD.remote())
 
-# # Generates envelop for nodal forces in all members
-# getEndMF= r2.getEndMF()
-
-# # Generates envelop for all member forces that are to be used in designing.
-# getMFdsg= r2.getMFdsg()
-
-# # Getting ray actors for each load combinations
-# obj= r2.getTLC()
-
-# Accessing details of object with load combination 
-
-
+# Accessing story drift of load combination LC7
+LC7_seismicD= ray.get(obj[8].seismicD.remote())
 
 
 

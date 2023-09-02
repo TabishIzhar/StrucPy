@@ -3969,7 +3969,11 @@ class RCFenv():
         if self.__PreP_status== False:
             raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
         
-        [self.__OB[j].RCanalysis.remote() for j in range (len(self.__OB),2)]
+        for i in range (len(self.__OB)):
+            self.__OB[i].RCanalysis.remote()
+            print ("DONE ", i)
+
+        # [self.__OB[i].RCanalysis.remote() for i in range (len(self.__OB))]
 
         self.memD,self.slab_pd, self.baseN, self.seismic_def, self.M_prop = ray.get(self.__OB[4].getGlobalVariables.remote())
 
