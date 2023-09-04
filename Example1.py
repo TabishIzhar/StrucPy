@@ -38,7 +38,7 @@ r1.changeFrame(member= 'beam', yudl= -10)
 r1.preP()
 
 #Changing the floor thickness and loads 
-# r1.changeFL(thickness= 100, LL= -5 , FF=-10, WP=0)
+r1.changeFL(thickness= 100, LL= -5 , FF=-10, WP=0)
 
 end3 = time.time()
 

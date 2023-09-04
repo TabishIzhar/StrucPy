@@ -14,7 +14,7 @@ load_combo= pd.read_excel('./InputFiles/Testfile4.xlsx', 'load_combinations', he
 # Check "boundcond" for defining different boundary condition
 
 #Creating RCF Object for structure
-r1= RCF(nodes_details,member_details,boundcond, load_combo= load_combo, autoflooring= True)
+r1= RCF(nodes_details,member_details,boundcond, load_combo= load_combo, autoflooring= True) 
 
 #Pre processing the model
 r1.preP()
@@ -32,7 +32,7 @@ r1.RCanalysis()
 # View 3D Model of Structure
 view_3Dmodel= r1.model3D()
 
-view_3Dmodel.show()                                     # If using VS Code or JupiterNotebook
+view_3Dmodel.show()                   # If using VS Code or JupiterNotebook
 view_3Dmodel.write_html("./plots/Ex4_model3D.html")              # To save model as html in your current directory
 
 

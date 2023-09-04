@@ -1543,8 +1543,6 @@ class RCF():
 
             sb= Cy
 
-
-
             if (cords[i,0] == cords[h,0]  and cords[i,2] == cords[h,2]):
                     t= np.array ([[0,sb,0],
                            [-sb*cg,0,sg],
@@ -2316,15 +2314,19 @@ class RCF():
         Vi = (WiHi/WH)*Vb
 
         ND= self.nodes_detail[['Floor', 'Stiffness']]
-
+        self.nodal_S_F= pd.DataFrame()
         for i in range (1,len(ND.Floor.unique())):
             ND_f=  ND.loc[ND['Floor']==i]
 
-            Stiff_ratio= ND_f['Stiffness']/ min(ND_f['Stiffness'])
-            Avg_Vi= Vi[i]/Stiff_ratio.sum()
-            nodal_seismic_forces= Avg_Vi*Stiff_ratio
+            Stiff_ratio= ND_f['Stiffness']/ (ND_f['Stiffness'].sum())
+            # Stiff_ratio= ND_f['Stiffness']/ min(ND_f['Stiffness'])
+            # Avg_Vi= Vi[i]/(Stiff_ratio.sum())
+            nodal_seismic_forces= Vi[i]*Stiff_ratio
 
-            self.__nodal_S_F= nodal_seismic_forces              # Nodal forces
+            nodal_seismic_forces_pd=  nodal_seismic_forces.to_frame()
+            nodal_S_F= pd.DataFrame( nodal_seismic_forces_pd.to_numpy(), index= nodal_seismic_forces_pd.index, columns= ["Nodal Forces"] )
+
+            self.nodal_S_F= pd.concat([self.nodal_S_F,nodal_S_F])              # Nodal forces
 
             if direction=='x':
                 self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
