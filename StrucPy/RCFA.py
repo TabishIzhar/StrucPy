@@ -760,7 +760,7 @@ class RCF():
         self.beam_details_with_deduction= self.beams_detail.copy()
         self.__beams_detail_preP= self.beams_detail.copy()     
         self.__columns_detail_preP= self.columns_detail.copy()
-        self.__nodes_detail_preP= self.nodes_detail.reset_index().copy()
+        self.__nodes_detail_preP= self.nodes_detail.copy()   #.reset_index()
 
 
     def __arrange_all(self):
@@ -796,7 +796,7 @@ class RCF():
         self.beam_details_with_deduction= self.beams_detail.copy()
         self.__beams_detail_preP= beam_details.copy()     
         self.__columns_detail_preP= self.columns_detail.copy()
-        self.__nodes_detail_preP= node_details.reset_index().copy()
+        self.__nodes_detail_preP= node_details.copy()  #.reset_index()
 
 
     def __autoflooring(self):  
@@ -2315,27 +2315,61 @@ class RCF():
 
         ND= self.nodes_detail[['Floor', 'Stiffness']]
         self.nodal_S_F= pd.DataFrame()
+        
+        final_stiff= []
+
         for i in range (1,len(ND.Floor.unique())):
             ND_f=  ND.loc[ND['Floor']==i]
 
-            Stiff_ratio= ND_f['Stiffness']/ (ND_f['Stiffness'].sum())
+            #NEW CODE
+            ND_f_index= ND_f.index.to_list()
+            stiff= []
+            for j in  ND_f_index:
+                stiff.append(self.__K_Global[((j-1)*6),((j-1)*6)])
+            
+            sum_stiff= sum(stiff)
+
+            Stiff_ratio= stiff/sum_stiff
+
+            # Stiff_ratio= ND_f['Stiffness']/ (ND_f['Stiffness'].sum())
             # Stiff_ratio= ND_f['Stiffness']/ min(ND_f['Stiffness'])
             # Avg_Vi= Vi[i]/(Stiff_ratio.sum())
+
+            final_stiff.append(stiff)
+
+
             nodal_seismic_forces= Vi[i]*Stiff_ratio
 
-            nodal_seismic_forces_pd=  nodal_seismic_forces.to_frame()
-            nodal_S_F= pd.DataFrame( nodal_seismic_forces_pd.to_numpy(), index= nodal_seismic_forces_pd.index, columns= ["Nodal Forces"] )
+            # nodal_seismic_forces_pd=  nodal_seismic_forces.to_frame()
+            # nodal_S_F= pd.DataFrame( nodal_seismic_forces_pd.to_numpy(), index= nodal_seismic_forces_pd.index, columns= ["Nodal Forces"] )
+            if i == 1:
+                print (nodal_seismic_forces)
+
+            nodal_S_F= pd.DataFrame( nodal_seismic_forces, index= ND_f_index, columns= ["Nodal Forces"] )
+
+            print ("Working")
 
             self.nodal_S_F= pd.concat([self.nodal_S_F,nodal_S_F])              # Nodal forces
 
+            # if direction=='x':
+            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
+            # if direction=='-x':
+            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= -nodal_seismic_forces*1000*seismic_load_factor
+            # if direction=='z':
+            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= nodal_seismic_forces*1000*seismic_load_factor
+            # if direction=='-z':
+            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= -nodal_seismic_forces*1000*seismic_load_factor
+
             if direction=='x':
-                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
+                self.__forcesnodal.loc[ND_f_index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
             if direction=='-x':
-                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= -nodal_seismic_forces*1000*seismic_load_factor
+                self.__forcesnodal.loc[ND_f_index,'Fx']= -nodal_seismic_forces*1000*seismic_load_factor
             if direction=='z':
-                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= nodal_seismic_forces*1000*seismic_load_factor
+                self.__forcesnodal.loc[ND_f_index,'Fz']= nodal_seismic_forces*1000*seismic_load_factor
             if direction=='-z':
-                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= -nodal_seismic_forces*1000*seismic_load_factor
+                self.__forcesnodal.loc[ND_f_index,'Fz']= -nodal_seismic_forces*1000*seismic_load_factor
+
+
         Vi[0]= Vb
         self.__SeismicShear= pd.DataFrame({"Seismic Shear": Vi})
         self.__SeismicShear.index.name= "Floor"
@@ -2429,6 +2463,8 @@ class RCF():
             self.__floorLoading()
         self.__tloads()
        
+        self.__stiffnessbeam()
+
         status=0
         if self.__seismic_def_status == True:
             if self.load_combo.iloc[0,2] > 0:
@@ -2457,7 +2493,7 @@ class RCF():
 
             self.__EQS(direction, seismic_load_factor)            
 
-        self.__stiffnessbeam()
+        
 
         self.__solution()
 

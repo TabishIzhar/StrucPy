@@ -30,8 +30,8 @@ model = r1.model3D()
 mem_list = [121,122,123,125,126,127,129,130,131,111,112,113,114,115,116,138,144,150,156,162,168,174,180,186,99,100,103,104,107,108,89,90,91,92,137,143,149,155,161,167,67,68,77,81,85,136,148,142]
 r1.changeFrame(member= mem_list, delete= True)
 
-#Changing width and depth of all members to 300 X 500 and udl of -10kN/m in y-direction on all members
-r1.changeFrame(member= 'all',width= 300, depth= 500)
+#Changing width and depth of all members to 400 X 400 and udl of -10kN/m in y-direction on all members
+r1.changeFrame(member= 'all',width= 400, depth= 400)
 r1.changeFrame(member= 'beam', yudl= -10)
 
 #Pre processing the model
