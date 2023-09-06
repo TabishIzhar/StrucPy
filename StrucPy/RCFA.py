@@ -2338,7 +2338,7 @@ class RCF():
 
             # nodal_S_F= pd.DataFrame( nodal_seismic_forces, index= ND_f_index, columns= ["Nodal Forces"] )
 
-            self.__nodal_S_F= pd.concat([self.nodal_S_F,nodal_S_F])              # Nodal forces
+            self.__nodal_S_F= pd.concat([self.__nodal_S_F,nodal_S_F])              # Nodal forces
 
             if direction=='x':
                 self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000

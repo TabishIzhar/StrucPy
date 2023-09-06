@@ -8,7 +8,7 @@ seismic_defination= pd.read_excel('./InputFiles/Example1.xlsx', 'Seismic_Definat
 load_combo= pd.read_excel('./InputFiles/Example1.xlsx', 'load_combinations', header = 0, index_col=0)
 
 # Creating RC frame object for analysis
-r1= RCF(nodes_details = None,member_details= None,boundarycondition= None,framegen= framegen, load_combo= load_combo,  autoflooring= True) 
+r1= RCF(nodes_details = None,member_details= None,boundarycondition= None,framegen= framegen,seismic_def=seismic_defination, load_combo= load_combo,  autoflooring= True) 
 
 #Pre processing the model
 r1.preP()
@@ -48,8 +48,17 @@ sfbmd= r1.sfbmd(47)
 # Getting Material Properties
 material_properties= r1.Mproperties()
 
+# Getting seismic caluclation
+seismicD= r1.seismicD()
+
+# Getting seismic shear
+seismicS= r1.seismicS()
+
+# Getting story average displacement and drift
+Sdrift= r1.Sdrift()
+
 # Getting deflection of Member 60 in global coordinate system
-defG= r1.defG(60) 
+defG= r1.defG(47) 
 
 # Getting beams detail of RC frame
 beamsD= r1.beamsD()
@@ -64,6 +73,9 @@ with pd.ExcelWriter('output_EXAMPLE1.xlsx') as writer:
     reactions.to_excel(writer, sheet_name='reactions')
     Ndisp.to_excel(writer, sheet_name='nodal displacement')
     material_properties.to_excel(writer, sheet_name='properties')
+    seismicD.to_excel(writer, sheet_name='seismicD')
+    seismicS.to_excel(writer, sheet_name='seismicS')
+    Sdrift.to_excel(writer, sheet_name='Sdrift')
     beamsD.to_excel(writer, sheet_name='Beams detail')
     colD.to_excel(writer, sheet_name='columns detail')
     nodesD.to_excel(writer, sheet_name='Nodes detail')
