@@ -1053,7 +1053,9 @@ class RCF():
             self.__concrete_density_beam= 0
             self.__concrete_density_col= 0
             self.__concrete_densitySlab = 0
-            
+
+        self.MD= self.__member_details    
+
     def __member_detailing(self):
         self.beams_detail= self.__beams_detail_preP.copy()     
         self.columns_detail= self.__columns_detail_preP.copy()
@@ -1072,6 +1074,7 @@ class RCF():
         for i in self.columns_detail.index:
             max_I= max(self.columns_detail.at[i,'Iz'],self.columns_detail.at[i,'Iy'])
             Length= self.columns_detail.at[i,'L']
+            
             self.columns_detail.at[i,'Stiffness_Factor']=max_I/Length
 
 #------------------------------------------------------------------------------
@@ -1081,6 +1084,9 @@ class RCF():
         building_base= p_y[p_y.y.isin([p_y.y.min()])].index
         building_base=building_base.values.reshape((1,len(building_base)))
 
+        initial_stiff= [' ' for i in range (len(self.nodes_detail))]
+        self.nodal_stiffness_seismic = pd.DataFrame({"Stiffness": initial_stiff})
+
         for i in range(len(self.nodes_detail)):
             
             b1=self.nodes_detail.at[i,'Beam1']
@@ -1089,7 +1095,6 @@ class RCF():
             b4=self.nodes_detail.at[i,'Beam4']
             Kb=0
             Kc=0
-            
             bottom_node=self.nodes_detail.Node[i]==building_base
             
             if bottom_node.any():
@@ -1106,12 +1111,14 @@ class RCF():
             for j in range (1,3):
                 ff= locals()["c"+str(j)]
                 if ff!=0:
-                    Kc = Kc + self.columns_detail.Stiffness_Factor[ff]        
+                    Kc = Kc + self.columns_detail.Stiffness_Factor[ff]    
+
             K= Kb+Kc
             self.nodes_detail.loc[i,'Stiffness']= K
 
-            
         self.nodes_detail= self.nodes_detail.set_index('Node')
+
+
 
     def __swayORnot(self):
         self.def_story= []
@@ -2314,61 +2321,33 @@ class RCF():
         Vi = (WiHi/WH)*Vb
 
         ND= self.nodes_detail[['Floor', 'Stiffness']]
-        self.nodal_S_F= pd.DataFrame()
+        self.__nodal_S_F= pd.DataFrame()
         
-        final_stiff= []
+        self.final_stiff= []
 
         for i in range (1,len(ND.Floor.unique())):
             ND_f=  ND.loc[ND['Floor']==i]
 
-            #NEW CODE
-            ND_f_index= ND_f.index.to_list()
-            stiff= []
-            for j in  ND_f_index:
-                stiff.append(self.__K_Global[((j-1)*6),((j-1)*6)])
-            
-            sum_stiff= sum(stiff)
 
-            Stiff_ratio= stiff/sum_stiff
-
-            # Stiff_ratio= ND_f['Stiffness']/ (ND_f['Stiffness'].sum())
-            # Stiff_ratio= ND_f['Stiffness']/ min(ND_f['Stiffness'])
-            # Avg_Vi= Vi[i]/(Stiff_ratio.sum())
-
-            final_stiff.append(stiff)
-
+            Stiff_ratio= ND_f['Stiffness']/ (ND_f['Stiffness'].sum())
 
             nodal_seismic_forces= Vi[i]*Stiff_ratio
 
-            # nodal_seismic_forces_pd=  nodal_seismic_forces.to_frame()
-            # nodal_S_F= pd.DataFrame( nodal_seismic_forces_pd.to_numpy(), index= nodal_seismic_forces_pd.index, columns= ["Nodal Forces"] )
-            if i == 1:
-                print (nodal_seismic_forces)
+            nodal_seismic_forces_pd=  nodal_seismic_forces.to_frame()
+            nodal_S_F= pd.DataFrame( nodal_seismic_forces_pd.to_numpy(), index= nodal_seismic_forces_pd.index, columns= ["Nodal Forces"] )
 
-            nodal_S_F= pd.DataFrame( nodal_seismic_forces, index= ND_f_index, columns= ["Nodal Forces"] )
+            # nodal_S_F= pd.DataFrame( nodal_seismic_forces, index= ND_f_index, columns= ["Nodal Forces"] )
 
-            print ("Working")
-
-            self.nodal_S_F= pd.concat([self.nodal_S_F,nodal_S_F])              # Nodal forces
-
-            # if direction=='x':
-            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
-            # if direction=='-x':
-            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= -nodal_seismic_forces*1000*seismic_load_factor
-            # if direction=='z':
-            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= nodal_seismic_forces*1000*seismic_load_factor
-            # if direction=='-z':
-            #     self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= -nodal_seismic_forces*1000*seismic_load_factor
+            self.__nodal_S_F= pd.concat([self.nodal_S_F,nodal_S_F])              # Nodal forces
 
             if direction=='x':
-                self.__forcesnodal.loc[ND_f_index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
+                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
             if direction=='-x':
-                self.__forcesnodal.loc[ND_f_index,'Fx']= -nodal_seismic_forces*1000*seismic_load_factor
+                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= -nodal_seismic_forces*1000*seismic_load_factor
             if direction=='z':
-                self.__forcesnodal.loc[ND_f_index,'Fz']= nodal_seismic_forces*1000*seismic_load_factor
+                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= nodal_seismic_forces*1000*seismic_load_factor
             if direction=='-z':
-                self.__forcesnodal.loc[ND_f_index,'Fz']= -nodal_seismic_forces*1000*seismic_load_factor
-
+                self.__forcesnodal.loc[nodal_seismic_forces.index,'Fz']= -nodal_seismic_forces*1000*seismic_load_factor
 
         Vi[0]= Vb
         self.__SeismicShear= pd.DataFrame({"Seismic Shear": Vi})
@@ -4012,11 +3991,11 @@ class RCFenv():
         if self.__PreP_status== False:
             raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
         
-        for i in range (len(self.__OB)):
-            self.__OB[i].RCanalysis.remote()
-            print ("DONE ", i)
+        # for i in range (len(self.__OB)):
+        #     self.__OB[i].RCanalysis.remote()
+        #     print ("DONE ", i)
 
-        # [self.__OB[i].RCanalysis.remote() for i in range (len(self.__OB))]
+        [self.__OB[i].RCanalysis.remote() for i in range (len(self.__OB))]
 
         self.memD,self.slab_pd, self.baseN, self.seismic_def, self.M_prop = ray.get(self.__OB[4].getGlobalVariables.remote())
 
