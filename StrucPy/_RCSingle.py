@@ -416,7 +416,7 @@ class _RCFforenvelop():
         self.beam_details_with_deduction= self.beams_detail.copy()
         self.__beams_detail_preP= self.beams_detail.copy()     
         self.__columns_detail_preP= self.columns_detail.copy()
-        self.__nodes_detail_preP= self.nodes_detail.reset_index().copy()
+        self.__nodes_detail_preP= self.nodes_detail.copy()
 
 
     def __arrange_all(self):
@@ -450,9 +450,10 @@ class _RCFforenvelop():
         self.nodes_detail= nodesD.copy()
 
         self.beam_details_with_deduction= self.beams_detail.copy()
-        self.__beams_detail_preP= beam_details.copy()     
+
+        self.__beams_detail_preP= self.beams_detail.copy()     
         self.__columns_detail_preP= self.columns_detail.copy()
-        self.__nodes_detail_preP= node_details.reset_index().copy()
+        self.__nodes_detail_preP= self.nodes_detail.copy() 
 
 
     def __autoflooring(self):  
@@ -1291,46 +1292,6 @@ class _RCFforenvelop():
                     my2= (qz*L*L)/12
                     mz2= (qy*L*L)/12        
             
-
-            # if self.__point_L==True:
-            #     if (self.__point_loads.index == mem_name).any():
-            #         pl= (self.__point_loads [self.__point_loads.index == mem_name])
-
-            #         for pf in range (0,len(pl)):
-            #             pqx= 0
-            #             pqy= 0
-            #             pqz= 0
-
-            #             aaa= pl.iat[pf,2]
-            #             bbb= L- aaa
-            #             if pl.iat[pf,1] == 'x':
-            #                 pqx= pl.iat[pf,0]
-
-
-            #             if pl.iat[pf,1] == 'y':
-            #                 pqy= pl.iat[pf,0]*1000
-            #                 PRay= -pqy* (bbb*bbb)*((3*aaa)+ bbb)/ (L*L*L) 
-            #                 PRby= -pqy* (aaa*aaa)*((3*bbb)+ aaa)/ (L*L*L)
-                            
-            #                 PMay= -pqy* (bbb*bbb)*(aaa)/ (L*L) 
-            #                 PMby= -pqy* (aaa*aaa)*(bbb)/ (L*L)
-
-            #                 fy1= fy1 + PRay
-            #                 fy2= fy2 + PRby
-            #                 mz1= mz1 + PMay 
-            #                 mz2= mz2 + PMby  
-
-            #             if pl.iat[pf,1] == 'z':
-            #                 pqz= pl.iat[pf,0]*1000
-            #                 PRaz= -pqz* (bbb*bbb)*((3*aaa)+ bbb)/ (L*L*L) 
-            #                 PRbz= -pqz* (aaa*aaa)*((3*bbb)+ aaa)/ (L*L*L)
-            #                 PMaz= -pqz* (bbb*bbb)*(aaa)/ (L*L) 
-            #                 PMbz= -pqz* (aaa*aaa)*(bbb)/ (L*L)
-
-            #                 fz1= fz1 + PRaz
-            #                 fz2= fz2 + PRbz
-            #                 my1= my1 + PMaz
-            #                 my2= my2 + PMbz
         
             local_nodal_f=np.array([ fx1,fy1,fz1, mx1,-my1,mz1, fx2,fy2,fz2, mx2,my2,-mz2 ])                #Torsion value Mx
             
@@ -1523,73 +1484,6 @@ class _RCFforenvelop():
             Mz = (nodalForces[5]-(nodalForces[1]*xx)-(q[i,1]*((xx**2)/2))).reshape((-1,1))
             Mx= np.ones(int(parts+1)).reshape((-1,1))* nodalForces[3]
             
-
-            # if self.__point_L==True: 
-                
-            #     if ((self.__point_loads.index == mem_names[i]).any()):
-            #         pl= (self.__point_loads [self.__point_loads.index == mem_names[i]])
-            #         pl= pl.sort_values(by=['Distance (m)'])
-            #         point_list= []
-            #         point_loads=[]
-            #         direction= []
-            #         for pf in range (0,len(pl)):
-            #             point_list.append(pl.iat[pf,2])
-            #             point_loads.append(pl.iat[pf,0])
-            #             direction.append(pl.iat[pf,1])
-
-            #         #point_list.append(L)
- 
-            
-            #         for val in range (len(point_list)):
-
-            #             PVy0= np.array([])
-            #             PMy0= np.array([])
-            #             PVz0= np.array([])
-            #             PMz0= np.array([])
-
-            #             xxxF= xx[xx<=point_list[val]]
-            #             xxxL= xx[xx>point_list[val]]
-
-            #             #fff= np.zeros(len(xxxF))
-            #             kkk= np.ones(len(xxxL))
-            #             P1= np.zeros(len(xxxF))
-            #             M1= np.zeros(len(xxxF))
-
-            #             if direction[val] == 'y':
-            #                 Pforcey= point_loads[val]
-                            
-            #             else:
-            #                 Pforcey= 0
-
-            #             if direction[val] == 'z':
-            #                 Pforcez= point_loads[val]
-            #             else:
-            #                 Pforcez= 0
-
-            #             P2y= Pforcey*kkk
-            #             P2z= Pforcez*kkk
-
-            #             M2y= P2z* (point_list[val] - xxxL)
-            #             M2z= P2y* (point_list[val] - xxxL)
-
-            #             PVy= np.hstack((P1,P2y))  
-            #             PMy1 = np.hstack((M1,M2y))
-                            
-            #             PVz= np.hstack((P1,P2z))  
-            #             PMz1 = np.hstack((M1,M2z))
-
-
-
-            #             PVy0= np.hstack((PVy0,PVy))
-            #             PMz0= np.hstack((PMz0,PMz1))
-
-            #             PVz0= np.hstack((PVz0,PVz))
-            #             PMy0= np.hstack((PMy0,PMy1))
-                    
-            #             Vy= Vy + PVy0.reshape((-1, 1))   
-            #             Vz= Vz + PVz0.reshape((-1, 1))
-            #             Mz= Mz + PMz0.reshape((-1, 1))
-            #             My= My + PMy0.reshape((-1, 1))
 
 
             if self.__slabload_there==1:
@@ -1868,11 +1762,13 @@ class _RCFforenvelop():
         
         self.axial_forces_pd= pd.DataFrame({"Axial Loads": axial_forces} ,index= self.member_list)
 
-    
-        # if self.tm > 2:
-        #     maxforces_pd.loc[:,:,'+ve']= maxforces_pd.loc[:,:,'+ve'].where(maxforces_pd.loc[:,:,'+ve']>=0, "NA") 
-            
-        #     maxforces_pd.loc[:,:,'-ve']= maxforces_pd.loc[:,:,'-ve'].where(maxforces_pd.loc[:,:,'-ve']<0, "NA")
+        even_index= [i for i in range (0,len(maxforces_pd), 2)]
+        odd_index= [i for i in range (1,len(maxforces_pd), 2)]
+
+        maxforces_pd[maxforces_pd.iloc[even_index,:]<0]= 9999999999
+        maxforces_pd[maxforces_pd.iloc[odd_index,:]>0]= 9999999999
+
+        maxforces_pd.replace(9999999999, "--", inplace=True)
 
         self.__maxF_pd= maxforces_pd
 
@@ -1924,7 +1820,7 @@ class _RCFforenvelop():
                     Sag= 0.42                    
             self.__seismic_def['Sag']= Sag
         else:
-            T = self.__seismic_def['Sag'].item()
+            Sag = self.__seismic_def['Sag'].item()
 
         self.__seismicD= self.__seismic_def.copy()
 
@@ -1942,15 +1838,19 @@ class _RCFforenvelop():
         Vi = (WiHi/WH)*Vb
 
         ND= self.nodes_detail[['Floor', 'Stiffness']]
+        self.__nodal_S_F= pd.DataFrame()
 
         for i in range (1,len(ND.Floor.unique())):
             ND_f=  ND.loc[ND['Floor']==i]
 
-            Stiff_ratio= ND_f['Stiffness']/ min(ND_f['Stiffness'])
-            Avg_Vi= Vi[i]/Stiff_ratio.sum()
-            nodal_seismic_forces= Avg_Vi*Stiff_ratio
+            Stiff_ratio= ND_f['Stiffness']/ (ND_f['Stiffness'].sum())
 
-            self.__nodal_S_F= nodal_seismic_forces              # Nodal forces
+            nodal_seismic_forces= Vi[i]*Stiff_ratio
+
+            nodal_seismic_forces_pd=  nodal_seismic_forces.to_frame()
+            nodal_S_F= pd.DataFrame( nodal_seismic_forces_pd.to_numpy(), index= nodal_seismic_forces_pd.index, columns= ["Nodal Forces"] )
+
+            self.__nodal_S_F= pd.concat([self.__nodal_S_F,nodal_S_F])
 
             if direction=='x':
                 self.__forcesnodal.loc[nodal_seismic_forces.index,'Fx']= seismic_load_factor*nodal_seismic_forces*1000
@@ -2008,10 +1908,10 @@ class _RCFforenvelop():
 
         self.__nodes_arrangement_for_members()
 
-        if self.tm < 300:
+        if self.tm < 150:
             self.__arrange_beam_column_nodes()
 
-        if self.tm > 300:
+        if self.tm > 150:
             self.__arrange_all()
 
 
@@ -2043,6 +1943,8 @@ class _RCFforenvelop():
             self.__floorLoading()
         self.__tloads()
        
+        self.__stiffnessbeam()
+
         status=0
         if self.__seismic_def_status == True:
             if self.load_combo.iloc[0,2] > 0:
@@ -2071,7 +1973,6 @@ class _RCFforenvelop():
 
             self.__EQS(direction, seismic_load_factor)            
 
-        self.__stiffnessbeam()
 
         self.__solution()
 
@@ -2265,29 +2166,65 @@ class _RCFforenvelop():
         fig.add_trace(go.Scatter(x=xx, y=sfy,mode='lines', line=dict(color="red")),row=1, col=1)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,sfy[-1]],mode='lines', line=dict(color="red") ), row=1, col=1)
 
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[sfy[0], sfy[-1]],
+            mode="markers+text",
+            text=[sfy[0], sfy[-1]],
+            textposition=["top center", "bottom center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=1)
+
+
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=1, col=2)
         fig.add_trace(go.Scatter(x=[0,0], y=[0,sfz[0]],mode='lines', line=dict(color="red") ), row=1, col=2)
         fig.add_trace(go.Scatter(x=xx, y=sfz,mode='lines',line=dict(color="red")), row=1, col=2)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,sfz[-1]],mode='lines', line=dict(color="red") ), row=1, col=2)
              
-
-        #fig.add_trace(go.Scatter(x=xx, y=bmy,mode='lines'),
-        #      row=2, col=1)
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[sfz[0], sfz[-1]],
+            mode="markers+text",
+            text=[sfz[0], sfz[-1]],
+            textposition=["top center", "bottom center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=2)
 
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=2, col=1)
         fig.add_trace(go.Scatter(x=[0,0], y=[0,bmy[0]],mode='lines', line=dict(color="red") ), row=2, col=1)
         fig.add_trace(go.Scatter(x=xx, y=bmy,mode='lines',line=dict(color="red")), row=2, col=1)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,bmy[-1]],mode='lines', line=dict(color="red") ), row=2, col=1)
 
-
-        #fig.add_trace(go.Scatter(x=xx, y=bmz,mode='lines'),
-        #      row=2, col=2)
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[bmy[0], bmy[-1]],
+            mode="markers+text",
+            text=[bmy[0], bmy[-1]],
+            textposition=["top center", "top center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=1)
 
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=2, col=2)
         fig.add_trace(go.Scatter(x=[0,0], y=[0,bmz[0]],mode='lines', line=dict(color="red") ), row=2, col=2)
         fig.add_trace(go.Scatter(x=xx, y=bmz,mode='lines',line=dict(color="red")), row=2, col=2)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,bmz[-1]],mode='lines', line=dict(color="red") ), row=2, col=2)
 
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[bmz[0], bmz[-1]],
+            mode="markers+text",
+            text=[bmz[0], bmz[-1]],
+            textposition=["top center", "top center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=2)
 
         fig.update_layout(showlegend=False)
         fig.update_yaxes(showgrid=False)
@@ -2357,7 +2294,6 @@ class _RCFforenvelop():
 
         return(fig)
 
-
     def defL(self, element):
 
         if self.__Analysis_performed== False:
@@ -2390,6 +2326,40 @@ class _RCFforenvelop():
 
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=3, col=1)
         fig.add_trace(go.Scatter(x=xx, y=defz,mode='lines', line=dict(color="red") ), row=3, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defx[0], defx[-1]],
+            mode="markers+text",
+            text=[defx[0], defx[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defy[0], defy[-1]],
+            mode="markers+text",
+            text=[defy[0], defy[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defz[0], defz[-1]],
+            mode="markers+text",
+            text=[defz[0], defz[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=3, col=1)
+
 
         fig.update_layout(showlegend=False)
         fig.update_yaxes(showgrid=False)
@@ -2478,6 +2448,39 @@ class _RCFforenvelop():
 
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=3, col=1)
         fig.add_trace(go.Scatter(x=xx, y=defz,mode='lines', line=dict(color="red") ), row=3, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defx[0], defx[-1]],
+            mode="markers+text",
+            text=[defx[0], defx[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defy[0], defy[-1]],
+            mode="markers+text",
+            text=[defy[0], defy[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defz[0], defz[-1]],
+            mode="markers+text",
+            text=[defz[0], defz[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=3, col=1)
 
         fig.update_layout(showlegend=False)
         fig.update_yaxes(showgrid=False)
@@ -2826,12 +2829,6 @@ class _RCFforenvelop():
         
         self.__Analysis_performed= False
         
-
-    def changeLC(self, loadC):   
-        self.load_combo= loadC.copy()
-        self.load_combo.columns= ["Dead_Load","Live_Load","EQX","-EQx","EQZ","-EQZ"]
-        self.load_combo.fillna(0,inplace=True)
-        self.__Analysis_performed= False
 
     def modelND(self):
         return (self.__ndd)

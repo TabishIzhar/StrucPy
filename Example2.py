@@ -76,7 +76,7 @@ with pd.ExcelWriter('output_EXAMPLE2.xlsx') as writer:
     getReact.to_excel(writer, sheet_name='All reactions')
     getNdismax.to_excel(writer, sheet_name='Nodal disp')
     getEndMF.to_excel(writer, sheet_name='End Moments')
-    getMFdsg.to_excel(writer, sheet_name='Design Forces')
+    getMFdsg.to_excel(writer, sheet_name='Member Design Forces')
 
 
 

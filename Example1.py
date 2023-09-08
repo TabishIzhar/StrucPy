@@ -1,6 +1,5 @@
 from StrucPy.RCFA import RCF
 import pandas as pd
-import time
 
 # importing modeling and data information from excel in dataframe
 framegen=  pd.read_excel('./InputFiles/Example1.xlsx', 'framegen', header = 0, index_col=0)
@@ -35,7 +34,7 @@ r1.changeFL(thickness= 100, LL= -5 , FF=-10, WP=0)
 # Performing Analysis
 r1.RCanalysis()
 
-# # Getting Reactions
+# Getting Reactions
 reactions= r1.reactions()
 
 # Getting nodal displacment

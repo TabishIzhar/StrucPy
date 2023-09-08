@@ -794,9 +794,10 @@ class RCF():
         self.nodes_detail= nodesD.copy()
 
         self.beam_details_with_deduction= self.beams_detail.copy()
-        self.__beams_detail_preP= beam_details.copy()     
+
+        self.__beams_detail_preP= self.beams_detail.copy()     
         self.__columns_detail_preP= self.columns_detail.copy()
-        self.__nodes_detail_preP= node_details.copy()  #.reset_index()
+        self.__nodes_detail_preP= self.nodes_detail.copy()  
 
 
     def __autoflooring(self):  
@@ -1083,9 +1084,6 @@ class RCF():
         p_y=self.__nodes_details.sort_values(by=['y','x', 'z'])
         building_base= p_y[p_y.y.isin([p_y.y.min()])].index
         building_base=building_base.values.reshape((1,len(building_base)))
-
-        initial_stiff= [' ' for i in range (len(self.nodes_detail))]
-        self.nodal_stiffness_seismic = pd.DataFrame({"Stiffness": initial_stiff})
 
         for i in range(len(self.nodes_detail)):
             
@@ -2240,6 +2238,7 @@ class RCF():
                 row_node2, 
                 row_node3]
 
+
             maxmemForces= pd.DataFrame(max_matrix[:,1:],index= row_node, columns= cols_names)
             
             maxforces_pd= pd.concat([maxforces_pd,maxmemForces]) 
@@ -2247,11 +2246,13 @@ class RCF():
         
         self.axial_forces_pd= pd.DataFrame({"Axial Loads": axial_forces} ,index= self.member_list)
 
-    
-        if self.tm > 2:
-            maxforces_pd.loc[:,:,'+ve']= maxforces_pd.loc[:,:,'+ve'].where(maxforces_pd.loc[:,:,'+ve']>=0, "NA") 
-            
-            maxforces_pd.loc[:,:,'-ve']= maxforces_pd.loc[:,:,'-ve'].where(maxforces_pd.loc[:,:,'-ve']<0, "NA")
+        even_index= [i for i in range (0,len(maxforces_pd), 2)]
+        odd_index= [i for i in range (1,len(maxforces_pd), 2)]
+
+        maxforces_pd[maxforces_pd.iloc[even_index,:]<0]= 9999999999
+        maxforces_pd[maxforces_pd.iloc[odd_index,:]>0]= 9999999999
+
+        maxforces_pd.replace(9999999999, "--", inplace=True)
 
         self.__maxF_pd= maxforces_pd
 
@@ -2303,7 +2304,7 @@ class RCF():
                     Sag= 0.42                    
             self.__seismic_def['Sag']= Sag
         else:
-            T = self.__seismic_def['Sag'].item()
+            Sag = self.__seismic_def['Sag'].item()
 
         self.__seismicD= self.__seismic_def.copy()
 
@@ -2323,7 +2324,6 @@ class RCF():
         ND= self.nodes_detail[['Floor', 'Stiffness']]
         self.__nodal_S_F= pd.DataFrame()
         
-        self.final_stiff= []
 
         for i in range (1,len(ND.Floor.unique())):
             ND_f=  ND.loc[ND['Floor']==i]
@@ -2335,8 +2335,6 @@ class RCF():
 
             nodal_seismic_forces_pd=  nodal_seismic_forces.to_frame()
             nodal_S_F= pd.DataFrame( nodal_seismic_forces_pd.to_numpy(), index= nodal_seismic_forces_pd.index, columns= ["Nodal Forces"] )
-
-            # nodal_S_F= pd.DataFrame( nodal_seismic_forces, index= ND_f_index, columns= ["Nodal Forces"] )
 
             self.__nodal_S_F= pd.concat([self.__nodal_S_F,nodal_S_F])              # Nodal forces
 
@@ -2387,7 +2385,6 @@ class RCF():
         self.__forcesnodal= self.nodalforces.copy()  
         self.__boundarycondition= self.boundcond.copy() 
         
-        
 
     def preP(self):
         """This function of :class:`StrucPy.RCFA.RCF` objects performs pre-processing for the analysis for a Reinforced Concrete Frame that user intend to analyse. It organizes, arranges and prepares the data's for analysis. This function should be called in order for analysis to take place. 
@@ -2401,10 +2398,10 @@ class RCF():
 
         self.__nodes_arrangement_for_members()
 
-        if self.tm < 300:
+        if self.tm < 150:
             self.__arrange_beam_column_nodes()
 
-        if self.tm > 300:
+        if self.tm > 150:
             self.__arrange_all()
 
 
@@ -2422,8 +2419,6 @@ class RCF():
         self.boundcond= self.__boundarycondition.copy()
 
 
-
-
     def RCanalysis(self):
         """This function of :class:`StrucPy.RCFA.RCF` objects performs analysis for a Reinforced Concrete Frame that user intend to analyse. It generates all the post analysis data. This function should be called first before any other function. 
 
@@ -2435,15 +2430,15 @@ class RCF():
         self.__Analysis_performed= True
 
         self.__properties()
+        
         self.__member_detailing()
-
 
         if self.__slabload_there==1:
             self.__floorLoading()
         self.__tloads()
-       
+        
         self.__stiffnessbeam()
-
+        
         status=0
         if self.__seismic_def_status == True:
             if self.load_combo.iloc[0,2] > 0:
@@ -2681,29 +2676,65 @@ class RCF():
         fig.add_trace(go.Scatter(x=xx, y=sfy,mode='lines', line=dict(color="red")),row=1, col=1)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,sfy[-1]],mode='lines', line=dict(color="red") ), row=1, col=1)
 
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[sfy[0], sfy[-1]],
+            mode="markers+text",
+            text=[sfy[0], sfy[-1]],
+            textposition=["top center", "bottom center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=1)
+
+
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=1, col=2)
         fig.add_trace(go.Scatter(x=[0,0], y=[0,sfz[0]],mode='lines', line=dict(color="red") ), row=1, col=2)
         fig.add_trace(go.Scatter(x=xx, y=sfz,mode='lines',line=dict(color="red")), row=1, col=2)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,sfz[-1]],mode='lines', line=dict(color="red") ), row=1, col=2)
              
-
-        #fig.add_trace(go.Scatter(x=xx, y=bmy,mode='lines'),
-        #      row=2, col=1)
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[sfz[0], sfz[-1]],
+            mode="markers+text",
+            text=[sfz[0], sfz[-1]],
+            textposition=["top center", "bottom center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=2)
 
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=2, col=1)
         fig.add_trace(go.Scatter(x=[0,0], y=[0,bmy[0]],mode='lines', line=dict(color="red") ), row=2, col=1)
         fig.add_trace(go.Scatter(x=xx, y=bmy,mode='lines',line=dict(color="red")), row=2, col=1)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,bmy[-1]],mode='lines', line=dict(color="red") ), row=2, col=1)
 
-
-        #fig.add_trace(go.Scatter(x=xx, y=bmz,mode='lines'),
-        #      row=2, col=2)
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[bmy[0], bmy[-1]],
+            mode="markers+text",
+            text=[bmy[0], bmy[-1]],
+            textposition=["top center", "top center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=1)
 
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=2, col=2)
         fig.add_trace(go.Scatter(x=[0,0], y=[0,bmz[0]],mode='lines', line=dict(color="red") ), row=2, col=2)
         fig.add_trace(go.Scatter(x=xx, y=bmz,mode='lines',line=dict(color="red")), row=2, col=2)
         fig.add_trace(go.Scatter(x=[xx[-1],xx[-1]], y=[0,bmz[-1]],mode='lines', line=dict(color="red") ), row=2, col=2)
 
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[bmz[0], bmz[-1]],
+            mode="markers+text",
+            text=[bmz[0], bmz[-1]],
+            textposition=["top center", "top center"],
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=2)
 
         fig.update_layout(showlegend=False)
         fig.update_yaxes(showgrid=False)
@@ -2814,6 +2845,40 @@ class RCF():
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=3, col=1)
         fig.add_trace(go.Scatter(x=xx, y=defz,mode='lines', line=dict(color="red") ), row=3, col=1)
 
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defx[0], defx[-1]],
+            mode="markers+text",
+            text=[defx[0], defx[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defy[0], defy[-1]],
+            mode="markers+text",
+            text=[defy[0], defy[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defz[0], defz[-1]],
+            mode="markers+text",
+            text=[defz[0], defz[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=3, col=1)
+
+
         fig.update_layout(showlegend=False)
         fig.update_yaxes(showgrid=False)
         fig.update_xaxes(showgrid=False)
@@ -2908,6 +2973,40 @@ class RCF():
 
         fig.add_trace(go.Scatter(x=xx, y=yyb,mode='lines', line=dict(color="#000000") ),row=3, col=1)
         fig.add_trace(go.Scatter(x=xx, y=defz,mode='lines', line=dict(color="red") ), row=3, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defx[0], defx[-1]],
+            mode="markers+text",
+            text=[defx[0], defx[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=1, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defy[0], defy[-1]],
+            mode="markers+text",
+            text=[defy[0], defy[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=2, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=[0, xx[-1]],
+            y=[defz[0], defz[-1]],
+            mode="markers+text",
+            text=[defz[0], defz[-1]],
+            textposition="top center",
+            textfont=dict(
+            size=12,
+            color="blue")
+            ),row=3, col=1)
+
 
         fig.update_layout(showlegend=False)
         fig.update_yaxes(showgrid=False)
@@ -4128,7 +4227,7 @@ class RCFenv():
                 pos= [po1, po2]
                 endforces= np.empty([2,6])
                 endforces[0,:]= tt[0, 1:]
-                endforces[1,:]= tt[-1, 1:]
+                endforces[1,:]= tt[-1, 1:]*(-1)
 
                 maxforces= np.empty([2,6])
                 maxforces[0,:]=np.max(tt,axis=0)[1:]  #positive Forces
@@ -4186,9 +4285,18 @@ class RCFenv():
             
             self.__dsgmaxForces= pd.concat([self.__dsgmaxForces,dsgF ])
 
-        self.__memmaxForces.loc[:,:,"+ve"]= self.__memmaxForces.loc[:,:,"+ve"].where(self.__memmaxForces.loc[:,:,"+ve"]>=0, "NA")
 
-        self.__memmaxForces.loc[:,:,"-ve"]= self.__memmaxForces.loc[:,:,"-ve"].where(self.__memmaxForces.loc[:,:,"-ve"]<0, "NA")
+        even_index= [i for i in range (0,len(self.__memmaxForces), 2)]
+        odd_index= [i for i in range (1,len(self.__memmaxForces), 2)]
+
+        self.__memmaxForces[self.__memmaxForces.iloc[even_index,:]<0]= 9999999999
+        self.__memmaxForces[self.__memmaxForces.iloc[odd_index,:]>0]= 9999999999
+
+        self.__memmaxForces.replace(9999999999, "--", inplace=True)
+
+        # self.__memmaxForces.loc[:,:,"+ve"]= self.__memmaxForces.loc[:,:,"+ve"].where(self.__memmaxForces.loc[:,:,"+ve"]>=0, "NA")
+
+        # self.__memmaxForces.loc[:,:,"-ve"]= self.__memmaxForces.loc[:,:,"-ve"].where(self.__memmaxForces.loc[:,:,"-ve"]<0, "NA")
 
         # MAx value need to be calculated for design
 
@@ -4464,7 +4572,6 @@ class RCFenv():
             raise Exception ("Perform analysis of the structure first.")
 
         return (self.__dsgmaxForces)
-
 
     def getLDef(self):
         """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCFenv` objects presenting maximum deflection detail of members in reinforced concrete frame from every load combinations in 'Local Coordinate System'. 
