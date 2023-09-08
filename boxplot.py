@@ -24,7 +24,7 @@ fig1.update_layout(
 
     legend_title="Load Combinations",
     font=dict(
-        family="Courier New, monospace",
+        family="Arial, monospace",
         size=20,
         # color="RebeccaPurple"
     )
