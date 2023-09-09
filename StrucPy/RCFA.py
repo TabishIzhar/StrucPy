@@ -144,14 +144,21 @@ class RCF():
 
 
 
-        if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, member_details, boundarycondition]):
-            raise TypeError ("Type of the argument must be DataFrame")
+        if not all(isinstance(i, pd.DataFrame) for i in [nodes_details, ]):
+            raise TypeError ("Type of the argument `nodes_details` must be DataFrame")
+        
+        if not all(isinstance(i, pd.DataFrame) for i in [member_details]):
+            raise TypeError ("Type of the argument `member_details` must be DataFrame")
+        
+        if not all(isinstance(i, pd.DataFrame) for i in [boundarycondition]):
+            raise TypeError ("Type of the argument `boundarycondition` must be DataFrame")
+        
 
         __member_columns= ['Node1', 'Node2', 'b', 'd','xUDL', 'yUDL', 'zUDL']
         __nodes_columns= ['x', 'y', 'z']
 
         if len(member_details.columns)<7:
-            raise Exception("MEMBER DETAILS must have 7 columns: ['Node1', 'Node2', 'b', 'd', 'xUDL', 'yUDL', 'zUDL'], First 4 columns are mandotory argument while last three loads can be left empty or with zero ")
+            raise Exception("MEMBER DETAILS must have 7 columns: ['Node1', 'Node2', 'b', 'd', 'xUDL', 'yUDL', 'zUDL']. First 4 columns are mandotory argument while last three columns presenting member udl  can be left empty or with zero, but all column must be there.")
 
         if len(member_details.columns)>7 :
             raise Exception("MEMBER DETAILS can have maximum of 7 columns: ['Node1', 'Node2', 'b', 'd','xUDL', 'yUDL', 'zUDL']")        
@@ -246,7 +253,7 @@ class RCF():
                 boundarycondition.sort_index(inplace=True)
                 self.__boundarycondition.loc[boundarycondition.index]= boundarycondition.loc[:]
         else:
-            raise Exception ("These nodes in boundary condition does not exist: ",  [i for i, val in enumerate(self.__bc_index) if not val] )
+            raise Exception ("These nodes in boundary condition does not exist: ",  [boundarycondition.index[i] for i, val in enumerate(self.__bc_index) if not val] )
 
         self.autoflooring= autoflooring
         self.__self_weight= self_weight
@@ -2425,7 +2432,7 @@ class RCF():
         :param: None
         """
         if self.__PreP_status == False:
-            raise Exception("Perform Pre Processing of the structure using method 'preP'")
+            raise Exception("Perform Pre-processing of the structure using method 'preP' before performing analysis.")
 
         self.__Analysis_performed= True
 

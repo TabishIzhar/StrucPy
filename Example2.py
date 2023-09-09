@@ -47,36 +47,39 @@ print ("Analysis Time : ", (end4-end3))
 
 print ("Total Time : ", (end4-start))
 
+
+
+getNdis= r2.getNdis()
 # Generates envelop for maximum values of reactions
-getReactmax= r2.getReactmax()
+# getReactmax= r2.getReactmax()
 
-# Generates envelop for reactions from every load combinations
-getReact= r2.getReact()
+# # Generates envelop for reactions from every load combinations
+# getReact= r2.getReact()
 
-# Generates envelop for maximum values of nodal displacements
-getNdismax= r2.getNdismax()
+# # Generates envelop for maximum values of nodal displacements
+# getNdismax= r2.getNdismax()
 
-# Generates envelop for nodal forces in all members
-getEndMF= r2.getEndMF()
+# # Generates envelop for nodal forces in all members
+# getEndMF= r2.getEndMF()
 
-# Generates envelop for all member forces that are to be used in designing.
-getMFdsg= r2.getMFdsg()
+# # Generates envelop for all member forces that are to be used in designing.
+# getMFdsg= r2.getMFdsg()
 
-# Getting ray actors for each load combinations
-obj= r2.getTLC()
+# # Getting ray actors for each load combinations
+# obj= r2.getTLC()
 
-# Accessing seismic detail of load combination LC6
-LC6_seismicD= ray.get(obj[7].seismicD.remote())
+# # Accessing seismic detail of load combination LC6
+# LC6_seismicD= ray.get(obj[7].seismicD.remote())
 
-# Accessing story drift of load combination LC7
-LC7_seismicD= ray.get(obj[8].seismicD.remote())
+# # Accessing story drift of load combination LC7
+# LC7_seismicD= ray.get(obj[8].seismicD.remote())
 
 with pd.ExcelWriter('output_EXAMPLE2.xlsx') as writer:  
-    getReactmax.to_excel(writer, sheet_name='Max Reactions')
-    getReact.to_excel(writer, sheet_name='All reactions')
-    getNdismax.to_excel(writer, sheet_name='Nodal disp')
-    getEndMF.to_excel(writer, sheet_name='End Moments')
-    getMFdsg.to_excel(writer, sheet_name='Member Design Forces')
+    getNdis.to_excel(writer, sheet_name='Nodal DISP ALL')
+#     getReact.to_excel(writer, sheet_name='All reactions')
+#     getNdismax.to_excel(writer, sheet_name='Nodal disp')
+#     getEndMF.to_excel(writer, sheet_name='End Moments')
+#     getMFdsg.to_excel(writer, sheet_name='Member Design Forces')
 
 
 
