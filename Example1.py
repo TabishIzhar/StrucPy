@@ -23,58 +23,63 @@ r1.changeFrame(member= mem_list, delete= True)
 
 #Changing width and depth of all members to 400 X 400 and udl of -10kN/m in y-direction on all members
 r1.changeFrame(member= 'all',width= 400, depth= 400)
-r1.changeFrame(member= 'beam', yudl= -10)
+r1.changeFrame(member= 'beam', yudl= -5)
 
 #Pre processing the model
 r1.preP()
 
 #Changing the floor thickness and loads 
-r1.changeFL(thickness= 100, LL= -5 , FF=-10, WP=0)
+r1.changeFL(thickness= 100, LL= -3 , FF=-5, WP=0)
 
 # Performing Analysis
 r1.RCanalysis()
 
-# Getting Reactions
-reactions= r1.reactions()
+# # Getting Reactions
+# reactions= r1.reactions()
 
-# Getting nodal displacment
-Ndisp= r1.Gdisp()
+# # Getting nodal displacment
+# Ndisp= r1.Gdisp()
 
 # Getting Shear Force and Bending Moment Diagram of Member with ID- 1
 sfbmd= r1.sfbmd(47)
 # sfbmd.write_html("./BMSF60.html")          
 
-# Getting Material Properties
-material_properties= r1.Mproperties()
+# # Getting Material Properties
+# material_properties= r1.Mproperties()
 
-# Getting seismic caluclation
-seismicD= r1.seismicD()
+# # Getting seismic caluclation
+# seismicD= r1.seismicD()
 
-# Getting seismic shear
-seismicS= r1.seismicS()
+# # Getting seismic shear
+# seismicS= r1.seismicS()
 
-# Getting story average displacement and drift
-Sdrift= r1.Sdrift()
+# # Getting story average displacement and drift
+# Sdrift= r1.Sdrift()
 
 # Getting deflection of Member 60 in global coordinate system
 defG= r1.defG(47) 
 
-# Getting beams detail of RC frame
-beamsD= r1.beamsD()
+# # Getting beams detail of RC frame
+# beamsD= r1.beamsD()
 
-# Getting columns detail of RC frame
-colD= r1.columnsD()
+# # Getting columns detail of RC frame
+# colD= r1.columnsD()
 
-# Getting nodes detail of RC frame
-nodesD= r1.nodesD()
+# # Getting nodes detail of RC frame
+# nodesD= r1.nodesD()
 
-with pd.ExcelWriter('output_EXAMPLE1.xlsx') as writer:  
-    reactions.to_excel(writer, sheet_name='reactions')
-    Ndisp.to_excel(writer, sheet_name='nodal displacement')
-    material_properties.to_excel(writer, sheet_name='properties')
-    seismicD.to_excel(writer, sheet_name='seismicD')
-    seismicS.to_excel(writer, sheet_name='seismicS')
-    Sdrift.to_excel(writer, sheet_name='Sdrift')
-    beamsD.to_excel(writer, sheet_name='Beams detail')
-    colD.to_excel(writer, sheet_name='columns detail')
-    nodesD.to_excel(writer, sheet_name='Nodes detail')
+# with pd.ExcelWriter('output_EXAMPLE1.xlsx') as writer:  
+#     reactions.to_excel(writer, sheet_name='reactions')
+#     Ndisp.to_excel(writer, sheet_name='nodal displacement')
+#     material_properties.to_excel(writer, sheet_name='properties')
+#     seismicD.to_excel(writer, sheet_name='seismicD')
+#     seismicS.to_excel(writer, sheet_name='seismicS')
+#     Sdrift.to_excel(writer, sheet_name='Sdrift')
+#     beamsD.to_excel(writer, sheet_name='Beams detail')
+#     colD.to_excel(writer, sheet_name='columns detail')
+#     nodesD.to_excel(writer, sheet_name='Nodes detail')
+
+
+# import plotly.io as pio
+# #save a figure of 300dpi, with 1.5 inches, and  height 0.75inches
+# pio.write_image(sfbmd, "sfbmd47.jpeg", width=5.2*500, height=2.21*300, scale=1)

@@ -53,10 +53,11 @@ fig.add_trace(go.Sunburst(
     ids=dfF1.ids,
     labels=dfF1.labels,
     parents=dfF1.parents,
-    domain=dict(row=0, column=0),
+    domain=dict(row=0, column=0,),
     marker=dict(colors=['#faf3e8', '#d8ebae', '#c6def5', '#e3aac9', '#f5f389'], line= dict(color= '#000000')),
     insidetextorientation='auto',
-    textfont=dict(size=18, color='#000000', family='Arial')
+    textfont=dict(size=18, color='#000000', family='Arial'),
+
 ))
 
 fig.add_trace(go.Sunburst(
@@ -64,7 +65,7 @@ fig.add_trace(go.Sunburst(
     labels=dfF2.labels,
     parents=dfF2.parents,
     domain=dict(row=0, column=1),
-    marker=dict(colors=['#faf3e8', '#d8ebae', '#c6def5', '#e3aac9', '#f5f389', '#ebbcf7', '#c3facd', '#faa5d5', '#b1d9f2'], line= dict(color= '#000000')),
+    marker=dict(colors=['#faf3e8', '#d8ebae', '#c6def5', '#e3aac9', '#f5f289', '#ebbcf7', '#c3facd', '#faa5d5', '#b1d9f2'], line= dict(color= '#000000')),
     insidetextorientation='auto',
     textfont=dict(size=18, color='#000000', family='Arial')
 ))
@@ -86,7 +87,8 @@ fig.add_trace(go.Sunburst(
     domain=dict(row= 1, column=1),
     marker=dict(colors=['#faf3e8', '#b1eaf2','#f5f389'], line= dict(color= '#000000')),
     insidetextorientation='auto',
-    textfont=dict(size=18, color='#000000', family='Arial')
+    textfont=dict(size=18, color='#000000', family='Arial'),
+
 ))
 
 # fig.update_yaxes(title_text="<b> a. Features of Instance nodes_details </b>",  row=1, col=1)   #layout_yaxis_range=[-(abs(min(sfy))+5),(abs(max(sfy))+5)],
@@ -97,34 +99,12 @@ fig.add_trace(go.Sunburst(
 
 fig.update_layout(
     grid= dict(columns=2, rows=2),
-    margin = dict(t=0, l=0, r=0, b=0)
+    margin = dict(t=20, l=20, r=20, b=20),
 )
 
 # fig.update_layout(uniformtext=dict(minsize=16, mode='hide'))
 
-fig.update_layout(height=1000, width=1000)
-fig.write_html("./figure1.html")
-fig.show()
-
-
-
-# import plotly.express as px
-# import pandas as pd
-
-
-
-
-# df = pd.read_excel("/Users/stuff/Desktop/test.xlsx")
-
-# g1 = df.Group1.map(customwrap)
-# g2 = df.Group2.map(customwrap)
-# g3 = df.Group3.map(customwrap)
-# g4 = df.Group4.map(customwrap)
-# my_values = df.Values
-
-# df = pd.DataFrame(
-#     dict(group1=g1, group2=g2, group3=g3, group4=g4, my_values=my_values)
-# )
-# fig = px.sunburst(df, path=['group1', 'group2', 'group3', 'group4'], values='my_values')
-
+# fig.update_layout(height=1000, width=1000)
+# fig.write_html("./figure1.html")
 # fig.show()
+
