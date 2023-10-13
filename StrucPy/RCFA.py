@@ -2263,6 +2263,44 @@ class RCF():
 
         self.__maxF_pd= maxforces_pd
 
+    def __calMaxdefL(self):
+
+        maxdefL_pd= pd.DataFrame()
+        k=0
+        row_node2= ["Max", "Max"]
+        row_node3= ["+ve", "-ve"]
+        cols_names= ["ux (mm)", "uy (mm)", "uz (mm)"]
+
+        for j in self.__Deflections_local:
+            i= np.delete(j, 0, 1)
+            max_matrix= np.zeros((2,3))
+            max_matrix[0,:]= np.amax(i,axis= 0)
+            max_matrix[1,:]= np.amin(i,axis= 0)
+
+            for aa in range (2):
+                for bb in range (3):
+                    if aa==0:
+                        if max_matrix[aa,bb] < 0:
+                            max_matrix[aa,bb]= 0
+                    if aa==1:
+                        if max_matrix[aa,bb] > 0:
+                            max_matrix[aa,bb]= 0                
+                    
+
+            row_node1=[self.member_list[k],self.member_list[k]]
+
+            row_node= [
+                row_node1, 
+                row_node2, 
+                row_node3]
+
+
+            maxmemdefL= pd.DataFrame(max_matrix,index= row_node, columns= cols_names)
+            
+            maxdefL_pd= pd.concat([maxdefL_pd,maxmemdefL]) 
+            k= k + 1
+        self.__maxdefL= maxdefL
+
     def __EQS(self,direction, seismic_load_factor):
         FL= self.story_lumploads.copy() 
         Z=  self.__seismic_def['Z'].item()
@@ -3376,7 +3414,7 @@ class RCF():
     
 
     def maxmemF(self):
-        """Returns a *List* of 2D Numpy Array of :class:`StrucPy.RCFA.RCF` objects presenting detail of members (beams and columns) forces. 
+        """Returns a *Dataframe* of :class:`StrucPy.RCFA.RCF` objects presenting detail of members (beams and columns) forces. 
         
         First column represents distance from lower number node to higher number node (2 nodes at end of member).
         Second column represents axial force in x-direction of the member in local coordinate system.
@@ -3386,13 +3424,31 @@ class RCF():
         Sixth column represents bending moment in y-direction of the member in local coordinate system.
         Seventh column represents bending moment in z-direction of the member in local coordinate system.
 
-        Note: x position in 3D Numpy array represents elements/members of reinforced concrete frame. All the members are arranged in acending order of their index number representing 3D numpy array respectively. 
+        Note: Note: Index of the Dataframe represents member ID. 
          
         :param: None
-        :return: A 3D numpy array of :class:`StrucPy.RCFA.RCF` objects.
-        :rtype: numpy array
+        :return: A dataframe of :class:`StrucPy.RCFA.RCF` objects.
+        :rtype: Dataframe
         """  
         return (self.__maxF_pd)
+
+    def maxdefL(self):
+        """Returns a *Dataframe* of :class:`StrucPy.RCFA.RCF` objects presenting detail of members (beams and columns) deflection in local coordinate system. 
+        
+        First column represents deflection in x-direction of the member in local coordinate system.
+        Second column represents deflection in y-direction of the member in local coordinate system.
+        Third column represents deflection in z-direction of the member in local coordinate system in millimeter (mm).
+
+
+        Note: Index of the Dataframe represents member ID. 
+         
+        :param: None
+        :return: A dataframe of :class:`StrucPy.RCFA.RCF` objects.
+        :rtype: DataFrame
+        """  
+        self.__calMaxdefL()
+
+        return (self.__maxdefL)
 
     def defLD(self):
         """Returns a *List* of 2D Numpy Array of :class:`StrucPy.RCFA.RCF` objects presenting detail of deflection detail of members (beam and columns) in local coordinate system. 

@@ -89,6 +89,10 @@ memF= r1.memF()
 # Getting maximum member forces of all RC frame members
 maxmemF= r1.maxmemF()
 
+# Getting maximum member deflection of all RC frame members in local coordinate system
+maxdefL= r1.maxdefL()
+
+
 with pd.ExcelWriter('output_EXAMPLE1.xlsx') as writer:  
     reactions.to_excel(writer, sheet_name='reactions')
     Ndisp.to_excel(writer, sheet_name='nodal displacement')
