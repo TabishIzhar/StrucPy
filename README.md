@@ -1,21 +1,27 @@
 # StrucPy
 
-**StrucPy** is a powerful python library for structural analysis. This library user *stiffness matrix* and *Finite Element Method* approach to attain the solution.  It's a powerful library that give's complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for optimization, design, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
-
-The uniqueness of *StrucPy* is that it gives full control to the user over the model. Apart from the result, user can always access and make change to the input arguments. Further user will have access to the data's generated during the analysis. Result are presented in apprehensible tabular form just like commercial software's, which can be exported.
+**StrucPy** is a powerful python library for structural analysis. It's a powerful library that give's complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for design, design optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
 
 ------------------------------------------------------------------------------------------------------------
+## Modules 
+
+* **RCFA** - Structural analysis module for Reinforced Concrete Framed Structures 
+* **RCFooting** - (Under Development)
+
+------------------------------------------------------------------------------------------------------------
+
 ## Project Objectives
 
-Objective of **StrucPy** is to provide an easy to use open-source library for the upliftment of civil/structural engineering students, faculties and researchers.
+Objective of **StrucPy** is to provide an easy to use open-source library for the upliftment of civil/structural engineering students, faculties and researchers without depending upon commercial licenses. 
 
-*Validity*: StrucPy are continuously monitored to remove any bugs and errors. The output of StrucPy is verified with the commercial software's like Bentley's STAAD PRO and CSI ETABS. Users are requested to report any issue/error encountered while using StrucPy.
+*User Friendly*: StrucPy provides a user-friendly approach for the analysis of structure without the use of extensive coding. Its powerful methods perform almost every function required before and after analysis.  It reduces the user loads by allowing to pass input arguments through Excel formats. 
 
-*User Friendly*: StrucPy provides a user-friendly approach for the analysis of structure without the use of extensive coding allowing user to pass input arguments through Excel formats. In order to operate and visualize analysis results user needs basic knowledge of python and some libraries like Pandas and Numpy.
+*Platform for Design Optimization*: StrucPy gives full access to pre- and post-analysis data of the structure. User can use those data's as per their requirement and research. Thus eliminates lack of control over data exchange and dependency on commercial software to perform analysis. 
+
+
+*Validity*: StrucPy are continuously monitored to remove any bugs and errors. The output of StrucPy is verified with the commercial software's like Bentley's STAAD PRO connect edition. Users are requested to report any issue/error encountered while using StrucPy.
 
 *Improvement*: StrucPy intents to provide open source solution to every aspect of structural analysis. In order to achieve StrucPy is working towards various module. The codes are often checked for improvements.
-
-*Freedom*: StrucPy believes in the freedom of imagination and application. Thus, StrucPy gives full access to pre- and post-analysis data of the structure. User can use those data's as per their requirement and research.
 
 ------------------------------------------------------------------------------------------------------------
 
@@ -23,19 +29,11 @@ Objective of **StrucPy** is to provide an easy to use open-source library for th
 
 Required Dependencies
 
-* **numpy**: used for matrix algebra and dense matrix solver
-* **pandas**: used for taking input and presenting output
-* **plotly**: used for visualization and plotting
-* **ray**: used for fast processing
+* **numpy**: For matrix algebra and dense matrix solver
+* **pandas**: For taking input and presenting output
+* **plotly**: For visualization and plotting
+* **ray**: For multi-processing
 * **openpyxl**: *optional* to read Excel files
-
-------------------------------------------------------------------------------------------------------------
-## Modules 
-
-* **RCFA** - Structural analysis module for Reinforced Concrete Framed Structures 
-* **RCFooting** - (Under Development)
-* **Over Head - Tank** (Under Development)
-* **Truss** - (Under Development)
 
 ------------------------------------------------------------------------------------------------------------
 
@@ -82,6 +80,27 @@ Gravity loads acting along y-axis.
 https://strucpy.readthedocs.io/
 
 ------------------------------------------------------------------------------------------------------------
+
+## Installation (from Git repository)
+
+1) Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
+
+2) Form a virtual environment using 
+```
+    $ py -3 -m venv venv
+```
+
+3) Activate virtual environment from cmd
+```
+    .\venv\Scripts\activate.bat
+```
+
+4) Install every dependency using requirement.txt
+```
+    (.venv) $ pip install -r requirements.txt
+```
+------------------------------------------------------------------------------------------------------------
+
 ## Preferred Integrated Development Environment (IDE)
 
 For proper visualization of graphs and models.
@@ -90,16 +109,6 @@ For proper visualization of graphs and models.
 * VS Code 
 
 -----------------------------------------------------------------------------------------------------------
-
-## Installation (Not Launched Yet)
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install StrucPy.
-
-```bash
-pip install StrucPy
-```
-
-------------------------------------------------------------------------------------------------------------
 
 ## Usage
 
@@ -138,8 +147,7 @@ r2.RCanalysis()
 ------------------------------------------------------------------------------------------------------------
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
