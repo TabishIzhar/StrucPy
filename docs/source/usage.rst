@@ -4,15 +4,6 @@ Usage
 Installation from Git repository
 -------------------------------
 
-* Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
-
-* Form a virtual environment using 
-.. code-block:: console
-
-   (.venv) $ py -3 -m venv venv
-
-* Install every dependency using pip
-
 1) Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
 
 2) Form a virtual environment using 
