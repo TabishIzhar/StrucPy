@@ -21,7 +21,7 @@ Objective of **StrucPy** is to provide an easy to use open-source library for th
 
 *Validity*: StrucPy are continuously monitored to remove any bugs and errors. The output of StrucPy is verified with the commercial software's like Bentley's STAAD PRO connect edition. Users are requested to report any issue/error encountered while using StrucPy.
 
-*Improvement*: StrucPy intents to provide open source solution to every aspect of structural analysis. In order to achieve StrucPy is working towards various module. The codes are often checked for improvements.
+*Improvement*: StrucPy intents to provide accurate open source solution to every aspect of structural analysis. The codes are often checked for improvements and scope. 
 
 ------------------------------------------------------------------------------------------------------------
 
