@@ -13,16 +13,16 @@ Installation from Git repository
 
 * Install every dependency using pip
 
---------------------------------------------------
-Installation using pip
--------------------------------
+1) Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
 
-* Has not yet been published on PyPi.
-
-To use StrucPy, first install it using pip:
-
+2) Form a virtual environment using 
 .. code-block:: console
+   $ py -3 -m venv venv
 
-   (.venv) $ pip install StrucPy
+3) Activate virtual environment from cmd
+.. code-block:: console
+   .\venv\Scripts\activate.bat
 
-
+4) Install every dependency using requirement.txt
+.. code-block:: console
+   (.venv) $ pip install -r requirements.txt
