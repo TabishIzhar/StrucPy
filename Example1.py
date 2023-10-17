@@ -35,76 +35,76 @@ r1.changeFL(thickness= 100, LL= -3 , FF=-5, WP=0)
 # Performing Analysis
 r1.RCanalysis()
 
-# Getting Reactions
-reactions= r1.reactions()
+# # Getting Reactions
+# reactions= r1.reactions()
 
-# Getting nodal displacment
-Ndisp= r1.Gdisp()
+# # Getting nodal displacment
+# Ndisp= r1.Gdisp()
 
-# Getting Shear Force and Bending Moment Diagram of Member with ID- 1
-sfbmd= r1.sfbmd(47)
-# sfbmd.write_html("./BMSF47.html")          
+# # Getting Shear Force and Bending Moment Diagram of Member with ID- 1
+# sfbmd= r1.sfbmd(47)
+# # sfbmd.write_html("./BMSF47.html")          
 
-# Getting Material Properties
-material_properties= r1.Mproperties()
+# # Getting Material Properties
+# material_properties= r1.Mproperties()
 
-# Getting seismic caluclation
-seismicD= r1.seismicD()
+# # Getting seismic caluclation
+# seismicD= r1.seismicD()
 
-# Getting seismic shear
-seismicS= r1.seismicS()
+# # Getting seismic shear
+# seismicS= r1.seismicS()
 
-# Getting story average displacement and drift
-Sdrift= r1.Sdrift()
+# # Getting story average displacement and drift
+# Sdrift= r1.Sdrift()
 
-# Getting deflection of Member 60 in global coordinate system
-defG= r1.defG(47) 
+# # Getting deflection of Member 60 in global coordinate system
+# defG= r1.defG(47) 
 
-# Getting beams detail of RC frame
-beamsD= r1.beamsD()
+# # Getting beams detail of RC frame
+# beamsD= r1.beamsD()
 
-# Getting columns detail of RC frame
-colD= r1.columnsD()
+# # Getting columns detail of RC frame
+# colD= r1.columnsD()
 
-# Getting nodes detail of RC frame
-nodesD= r1.nodesD()
-
-
-
-# Getting Shear Force and Bending Moment Data of RC frame
-design_forces= r1.maxmemF()
-
-# Getting deflection data in local coordinate system of RC frame
-defLD= r1.defLD()
-
-# Getting deflection data in global coordinate system of RC frame
-defGD= r1.defGD()
-
-# Getting floor details of RC frame
-floord= r1.floorD()
-
-# Getting Shear Force and Bending Moment Data of RC frame
-memF= r1.memF()
-
-# Getting maximum member forces of all RC frame members
-maxmemF= r1.maxmemF()
-
-# Getting maximum member deflection of all RC frame members in local coordinate system
-maxdefL= r1.maxdefL()
+# # Getting nodes detail of RC frame
+# nodesD= r1.nodesD()
 
 
-with pd.ExcelWriter('output_EXAMPLE1.xlsx') as writer:  
-    reactions.to_excel(writer, sheet_name='reactions')
-    Ndisp.to_excel(writer, sheet_name='nodal displacement')
-    material_properties.to_excel(writer, sheet_name='properties')
-    floord.to_excel(writer, sheet_name='floor detail')    
-    seismicD.to_excel(writer, sheet_name='seismic detail')
-    seismicS.to_excel(writer, sheet_name='seismic shear')
-    Sdrift.to_excel(writer, sheet_name='story drift')
-    beamsD.to_excel(writer, sheet_name='beams detail')
-    colD.to_excel(writer, sheet_name='columns detail')
-    nodesD.to_excel(writer, sheet_name='nodes detail')
-    maxmemF.to_excel(writer, sheet_name='maximum member forces')
+
+# # Getting Shear Force and Bending Moment Data of RC frame
+# design_forces= r1.maxmemF()
+
+# # Getting deflection data in local coordinate system of RC frame
+# defLD= r1.defLD()
+
+# # Getting deflection data in global coordinate system of RC frame
+# defGD= r1.defGD()
+
+# # Getting floor details of RC frame
+# floord= r1.floorD()
+
+# # Getting Shear Force and Bending Moment Data of RC frame
+# memF= r1.memF()
+
+# # Getting maximum member forces of all RC frame members
+# maxmemF= r1.maxmemF()
+
+# # Getting maximum member deflection of all RC frame members in local coordinate system
+# maxdefL= r1.maxdefL()
+
+
+# with pd.ExcelWriter('output_EXAMPLE1.xlsx') as writer:  
+#     reactions.to_excel(writer, sheet_name='reactions')
+#     Ndisp.to_excel(writer, sheet_name='nodal displacement')
+#     material_properties.to_excel(writer, sheet_name='properties')
+#     floord.to_excel(writer, sheet_name='floor detail')    
+#     seismicD.to_excel(writer, sheet_name='seismic detail')
+#     seismicS.to_excel(writer, sheet_name='seismic shear')
+#     Sdrift.to_excel(writer, sheet_name='story drift')
+#     beamsD.to_excel(writer, sheet_name='beams detail')
+#     colD.to_excel(writer, sheet_name='columns detail')
+#     nodesD.to_excel(writer, sheet_name='nodes detail')
+#     maxmemF.to_excel(writer, sheet_name='maximum member forces')
    
 
 
