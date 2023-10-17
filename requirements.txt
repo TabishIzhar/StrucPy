@@ -1,5 +1,5 @@
-numpy==1.25.2
-pandas==2.0.3
-plotly==5.15.0
+numpy==1.23.3
+pandas==1.4.4
+plotly==5.10.0
 ray==2.6.1
-openpyxl==3.1.2
+openpyxl==3.0.10
