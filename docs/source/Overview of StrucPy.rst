@@ -1,9 +1,7 @@
 Overview of StrucPy
 ====================
 
-**StrucPy** is a powerful python library for structural analysis. This library user *stiffness matrix* and *Finite Element Method* approach to attain the solution.  It's a powerful library that give's complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for optimization, design, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
-
-The uniqueness of *StrucPy* is that it gives full control to the user over the model. Apart from the result, user can always access and make change to the input arguments. Further user will have access to the data's generated during the analysis. Result are presented in apprehensible tabular form which can be exported.
+**StrucPy** is a powerful python library for structural analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for optimization, design, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc. The uniqueness of *StrucPy* is that it gives full control to the user over the model. Apart from the result, user can always access and make change to the input arguments. Further user will have access to the data's generated during the analysis. Result are presented in apprehensible tabular form which can be exported.
 
 Usually the model input can vary from 1 to 1000's members depending upon the complexity of the structure. StrucPy provides a simple method for input in form of *Dataframe*, capable of taking any number of input which can be easily be cross-checked and processed. StrucPy make handling structural complexity easier.
 
@@ -13,17 +11,24 @@ Generally some formats such as *.csv, .xls, .xlsx* etc. are very common and easy
 
 -------------------
 
+Modules 
+----------------
+* **RCFA** - Structural analysis module for Reinforced Concrete Framed Structures 
+* **RCFooting** (Under Development)
+
+----------------
+
 Project Objectives
 -------------------
-Objective of **StrucPy** is to provide an easy to use open-source library for the upliftment of civil/structural engineering students, faculties and researchers along with development.
+Objective of **StrucPy** is to provide an easy to use open-source library for the upliftment of civil/structural engineering students, faculties and researchers without depending upon commercial licenses. 
 
-*Validity*: StrucPy are continuously monitored to remove any bugs and errors. The output of StrucPy is verified with the commercial software's like Bentley's STAAD PRO and CSI ETABS. Users are requested to report any issue/error encountered while using StrucPy.
+*User Friendly*: StrucPy provides a user-friendly approach for the analysis of structure without the use of extensive coding. Its powerful methods perform almost every function required before and after analysis.  It reduces the user loads by allowing to pass input arguments through Excel formats. 
 
-*User Friendly*: StrucPy provides a user-friendly approach for the analysis of structure without the use of extensive coding allowing user to pass input arguments through Excel formats. In order to operate and visualize analysis results user needs basic knowledge of python and some libraries like Pandas and Numpy.
+*Platform for Design Optimization*: StrucPy gives full access to pre- and post-analysis data of the structure. User can use those data's as per their requirement and research. Thus eliminates lack of control over data exchange and dependency on commercial software to perform analysis. 
 
-*Improvement*: StrucPy intents to provide open source solution to every aspect of structural analysis. In order to achieve StrucPy is working towards various module. The codes are often checked for improvements.
+*Validity*: StrucPy are continuously monitored to remove any bugs and errors. The output of StrucPy is verified with the commercial software's like Bentley's STAAD PRO connect edition. Users are requested to report any issue/error encountered while using StrucPy.
 
-*Freedom*: StrucPy believes in the freedom of imagination and application. Thus, StrucPy gives full access to pre- and post-analysis data of the structure. User can use those data's as per their requirement and research.
+*Improvement*: StrucPy intents to provide accurate open source solution to every aspect of structural analysis. The codes are often checked for improvements and scope. 
 
 ----------------
 
@@ -51,15 +56,6 @@ Gravity loads acting along y-axis.
 
 ----------------------------------------------------------
 
-Modules 
-----------------
-* **RCFA** - Structural analysis module for Reinforced Concrete Framed Structures 
-* **RCFooting** (Under Development)
-* **Over Head Tank** (Under Development)
-* **Truss** (Under Development)
-
-
-----------------
 
 RCFA
 ----------------
