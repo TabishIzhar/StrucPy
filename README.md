@@ -18,7 +18,6 @@ Objective of **StrucPy** is to provide an easy to use open-source library for th
 
 *Platform for Design Optimization*: StrucPy gives full access to pre- and post-analysis data of the structure. User can use those data's as per their requirement and research. Thus eliminates lack of control over data exchange and dependency on commercial software to perform analysis. 
 
-
 *Validity*: StrucPy are continuously monitored to remove any bugs and errors. The output of StrucPy is verified with the commercial software's like Bentley's STAAD PRO connect edition. Users are requested to report any issue/error encountered while using StrucPy.
 
 *Improvement*: StrucPy intents to provide accurate open source solution to every aspect of structural analysis. The codes are often checked for improvements and scope. 
