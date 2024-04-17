@@ -1,5 +1,9 @@
 import pathlib
 from setuptools import setup
+from setuptools import find_packages
+import sys
+
+# sys.path.insert(0, './src')
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -22,6 +26,7 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     packages=["StrucPy"],
+    # packages=find_packages(include=['src', 'src/StrucPy']),
     include_package_data=False,
     install_requires=["numpy", "pandas", "plotly", "ray", "openpyxl" ]
 )
