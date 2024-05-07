@@ -1,1 +1,0 @@
-{"rule":"ENGLISH_WORD_REPEAT_BEGINNING_RULE","sentence":"^\\QProduces the deflected shape of RCF model.\\E$"}
