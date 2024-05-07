@@ -93,7 +93,7 @@ Generate Frame
 
 `framegen` rows and columns are **positional arguments**.
 
-.. figure::  ./images/FG.png
+.. figure::  ./images/FG.JPG
    :align: center
 
 
@@ -234,7 +234,7 @@ Note: Succeeding "Type" arguments overrides previous type. If "Beam" follows aft
 
 Material Properties columns are **positional arguments**.
 
-.. figure::  ./images/pp.png
+.. figure::  ./images/pp.JPG
    :align: center
 
 ------------------------
@@ -313,5 +313,3 @@ Stability Index
 `col_stablity_index` represents stability index of a reinforced concrete member/frame and is an **Optional Parameter**. Stability index value helps in classifying columns as sway or non-sway. Its value can be passed as per the user requirement. 
 
 **Default value is 0.04. (IS456:2000)**. 
-
-------------------------
