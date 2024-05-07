@@ -96,6 +96,7 @@ Generate Frame
 .. figure::  ./images/FG.png
    :align: center
 
+
 ------------------------
 
 Nodal Forces Details
