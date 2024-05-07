@@ -234,7 +234,7 @@ Note: Succeeding "Type" arguments overrides previous type. If "Beam" follows aft
 
 Material Properties columns are **positional arguments**.
 
-.. figure::  ./images/properties.png
+.. figure::  ./images/pp.png
    :align: center
 
 ------------------------
@@ -303,7 +303,7 @@ Note: It's capable of handling multiple point loads.
 
 Point loads columns are **positional arguments**.
 
-.. figure::  ./images/pL.png
+.. figure::  ./images/PL.png
    :align: center
 
 ------------------------
