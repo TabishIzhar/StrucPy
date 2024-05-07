@@ -1,6 +1,6 @@
 # StrucPy
 
-**StrucPy** is a powerful python library for structural analysis. It's a powerful library that give's complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for design, design optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
+**StrucPy** is a powerful python library for structural analysis. It give's complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, structural design, design optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
 
 ------------------------------------------------------------------------------------------------------------
 ## Modules 
@@ -32,7 +32,7 @@ Required Dependencies
 * **pandas**: For taking input and presenting output
 * **plotly**: For visualization and plotting
 * **ray**: For multi-processing
-* **openpyxl**: *optional* to read Excel files
+* **openpyxl**: To read Excel files
 
 ------------------------------------------------------------------------------------------------------------
 
@@ -80,7 +80,15 @@ https://strucpy.readthedocs.io/
 
 ------------------------------------------------------------------------------------------------------------
 
-## Installation (from Git repository)
+## Installation 
+
+```
+    $ py -3 -m pip install StrucPy
+```
+
+------------------------------------------------------------------------------------------------------------
+
+## Cloning Git repository
 
 1) Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
 

@@ -1,9 +1,6 @@
 StrucPy package
 ===============
 
-Submodules
-----------
-
 StrucPy.RCFA module
 -------------------
 

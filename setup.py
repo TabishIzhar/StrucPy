@@ -1,22 +1,15 @@
-import pathlib
-from setuptools import setup
-from setuptools import find_packages
-import sys
+from setuptools import find_packages, setup
 
-# sys.path.insert(0, './src')
+with open("README.md") as f:
+    long_description= f.read()
 
-# The directory containing this file
-HERE = pathlib.Path(__file__).parent
-
-# The text of the README file
-README = (HERE / "README.md").read_text()
-
+# This call to setup() does all the work
 # This call to setup() does all the work
 setup(
     name="StrucPy",
-    version="1.0.0",
+    version="0.0.1",
     description="Object Oriented Structural Analysis",
-    long_description=README,
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/TabishIzhar/StrucPy.git",
     author="Tabish Izhar",
@@ -25,8 +18,15 @@ setup(
     classifiers=[
         "Programming Language :: Python :: 3.10",
     ],
-    packages=["StrucPy"],
-    # packages=find_packages(include=['src', 'src/StrucPy']),
+    package_dir= {"":"src"},
+    packages=find_packages(where='src'),
     include_package_data=False,
-    install_requires=["numpy", "pandas", "plotly", "ray", "openpyxl" ]
+    install_requires=["numpy>=1.23.3", "pandas>=1.4.4", "plotly>=5.10.0", "ray>=2.6.1", "openpyxl>=3.0.10" ],
+    extras_require={
+        "dev": ["pytest>=7.0","twine>=4.0.2"],
+    },
+    python_requires=">=3.10",
 )
+
+
+

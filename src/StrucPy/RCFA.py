@@ -229,15 +229,19 @@ class RCF():
             self.__fv_index = forcesnodal.index.isin(nodes_details.index)
 
             if self.__fv_index.all():
-                if len(forcesnodal)==self.node_list:
+                if len(forcesnodal.index)==len(self.node_list):
                     self.__forcesnodal= forcesnodal.sort_index()
                     self.__forcesnodal.columns= ["Fx","Fy","Fz","Mx","My","Mz"]
-                elif len(forcesnodal)!=self.node_list:           
+                else:          
                     self.__forcesnodal = pd.DataFrame(np.zeros([self.tn,6]),index=self.node_list,columns=["Fx","Fy","Fz","Mx","My","Mz"])
                     forcesnodal.sort_index(inplace=True)
                     self.__forcesnodal.loc[forcesnodal.index]= forcesnodal.loc[:]
             else:
                 raise Exception ("These nodes in nodal forces DataFrame does not exist: ",  [i for i, val in enumerate(self.__fv_index) if not val] )
+
+            self.__forcesnodal= self.__forcesnodal*1000    
+
+        
 
         if len(boundarycondition.columns) != 6:
             raise Exception ("The boundary condition dataframe must contain 6 columns representing each degree of freedom in 3D space i.e. 'Trans x', 'Trans y', 'Trans z', 'Rotation x', 'Rotation y', 'Rotation z'.  ")
@@ -245,15 +249,22 @@ class RCF():
         self.__bc_index = boundarycondition.index.isin(nodes_details.index)
 
         if self.__bc_index.all():
-            if len(boundarycondition)==self.node_list:
+            if (len(boundarycondition.index)==len(self.node_list)):
                 self.__boundarycondition= boundarycondition.sort_index()
                 self.__boundarycondition.columns= ["x","y","z","thetax","thetay","thetaz"]
-            elif len(boundarycondition)!=self.node_list:             
+
+            else:            
                 self.__boundarycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
                 boundarycondition.sort_index(inplace=True)
                 self.__boundarycondition.loc[boundarycondition.index]= boundarycondition.loc[:]
+
+            # elif len(boundarycondition)!=self.node_list:             
+            #     self.__boundarycondition = pd.DataFrame(np.ones([self.tn,6]),index=self.node_list,columns=["x","y","z","thetax","thetay","thetaz"])
+            #     boundarycondition.sort_index(inplace=True)
+            #     self.__boundarycondition.loc[boundarycondition.index]= boundarycondition.loc[:]
         else:
             raise Exception ("These nodes in boundary condition does not exist: ",  [boundarycondition.index[i] for i, val in enumerate(self.__bc_index) if not val] )
+
 
         self.autoflooring= autoflooring
         self.__self_weight= self_weight
@@ -285,10 +296,10 @@ class RCF():
             self.load_combo.fillna(0,inplace=True)
 
         if seismic_def is None:
-            self.__seismic_def_status= False
+            self.seismic_def_status= False
             self.__seismic_def= "No Seismic Anlaysis Performed"
         else:
-            self.__seismic_def_status= True
+            self.seismic_def_status= True
             if not isinstance(seismic_def,pd.DataFrame): 
                 raise TypeError ("Type of the 'seismic_def' must be DataFrame")
             self.__seismic_def= seismic_def
@@ -1166,7 +1177,7 @@ class RCF():
     def __effectiveLength(self):
         # Sway or non-sway columns
 
-        if self.__seismic_def_status == True:
+        if self.seismic_def_status == True:
             self.__swayORnot()
 
         # Effective Length Calculation of columns
@@ -1180,7 +1191,7 @@ class RCF():
             
             story= self.columns_detail.at[i,'Story']
             
-            if self.__seismic_def_status == True:
+            if self.seismic_def_status == True:
                 sway= self.sway[story] 
             else:
                 sway = 0
@@ -1749,7 +1760,8 @@ class RCF():
         # ***This function caluclates the GLobal Forces and Displacements***
          
         forcevec= np.transpose(self.__forcesnodal.to_numpy().flatten())
-        dispvec= np.transpose(self.__boundarycondition.to_numpy().flatten())  
+        dispvec= np.transpose(self.__boundarycondition.to_numpy().flatten())
+
         global_forces= self.__global_forces
         
         eq1= np.array([])    # Vector to find forces
@@ -1900,7 +1912,6 @@ class RCF():
  
             
                     for val in range (len(point_list)):
-
                         PVy0= np.array([])
                         PMy0= np.array([])
                         PVz0= np.array([])
@@ -1950,6 +1961,22 @@ class RCF():
                         Mz= Mz + PMz0.reshape((-1, 1))
                         My= My + PMy0.reshape((-1, 1))
 
+
+                    if point_list[val]== L:
+                        if direction[val] == 'y':
+                            Pforcey= point_loads[val]   
+                        else:
+                            Pforcey= 0
+
+                        if direction[val] == 'z':
+                            Pforcez= point_loads[val]
+                        else:
+                            Pforcez= 0                       
+
+                        P2y= Pforcey*1
+                        P2z= Pforcez*1
+                        Vy[-1,0]= Vy[-1,0] + P2y
+                        Vz[-1,0]= Vz[-1,0] + P2z
 
             if self.__slabload_there==1:
                 if (sb.index == mem_names[i]).any():
@@ -2047,32 +2074,6 @@ class RCF():
         self.__member_nodes_inorder=member_nodes
         
         self.__SF_BM= BM_SFmat              # Shear Force and Bending Moment DATA 
-
-    def __internalAll(self):
-        dis= self.__GDisplacement 
-        mem_l= self.__member_details.loc[:,'xUDL':'zUDL']
-        dis=dis.flatten().reshape((-1,1))
-        nodes= self.__nodes_details.to_numpy()
-        q= (mem_l.to_numpy())      #in Kn
-
-        np.set_printoptions(precision = 3, suppress = True)  #surpressing exponential option while printing
-        
-        tm= self.tm
-        #3D array to store BM and SF variation x= Member, y=value at some distance and z= xx,Vx,Vy,My,Mz
-         
-    
-        mem_names = self.member_list
-    
-        
-        if self.__slabload_there==1:
-            sb= self.slab_pd.copy()
-            sb.index= sb.Beam.to_list()
-        else:
-            sb= None
-
-        self.BM_SFmat1, self.member_nodes1, self.ds1 = ray.get([cal_internalF.remote(self.__member_details.iloc[i,:], self.__nodes_details.iloc[i,:], nodes, dis, self.__trans_mat[i,:,:], self.__local_stiffness[i,:,:], self.__lnf[i,:,:] , q , mem_names, i, self.__point_L , self.__point_loads, self.__slabload_there, sb, self.load_combo, self.__concrete_densitySlab) for i in range(tm)])
-
-        pass
 
 
     @ray.remote
@@ -2259,7 +2260,7 @@ class RCF():
         maxforces_pd[maxforces_pd.iloc[even_index,:]<0]= 9999999999
         maxforces_pd[maxforces_pd.iloc[odd_index,:]>0]= 9999999999
 
-        maxforces_pd.replace(9999999999, "--", inplace=True)
+        maxforces_pd.replace(9999999999, 0, inplace=True)
 
         self.__maxF_pd= maxforces_pd
 
@@ -2299,7 +2300,7 @@ class RCF():
             
             maxdefL_pd= pd.concat([maxdefL_pd,maxmemdefL]) 
             k= k + 1
-        self.__maxdefL= maxdefL
+        self.__maxdefL= maxdefL_pd
 
     def __EQS(self,direction, seismic_load_factor):
         FL= self.story_lumploads.copy() 
@@ -2485,7 +2486,7 @@ class RCF():
         self.__stiffnessbeam()
         
         status=0
-        if self.__seismic_def_status == True:
+        if self.seismic_def_status == True:
             if self.load_combo.iloc[0,2] > 0:
                 direction= 'x'
                 seismic_load_factor= self.load_combo.iat[0,2]
@@ -2524,7 +2525,7 @@ class RCF():
 
         self.__calMaxmemF()
 
-        if self.__seismic_def_status == True:
+        if self.seismic_def_status == True:
             self.__drift()
 
         self.__effectiveLength()
@@ -3107,99 +3108,6 @@ class RCF():
         fig.update_yaxes(title_text="<b>Deflection(mm)</b>", row=3, col=1)
         return(fig)
 
-    def aniDef(self):
-        """Returns a *figure* of :class:`StrucPy.RCFA.RCF` objects presenting the animation of the deflected shape of a Reinforced Concrete Frame. It shows the deflection animation of a frame in their *Global Coordinate System*. It can be saved in any format using Plotly methods.
-         
-        :param: None
-        :return: A plotly figure for a member of :class:`StrucPy.RCFA.RCF` objects.
-        :rtype: Figure 
-        """  
-
-        if self.__Analysis_performed== False:
-            raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
-
-        x1=self.__Framez3D
-        y1=self.__Framex3D
-        z1=self.__Framey3D
-        n_frames=100
-
-        frames = []
-        for j in range (n_frames): 
-
-            fig = go.Figure()
-        
-            fig.update_layout(scene = dict(xaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
-                                   yaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
-                                   zaxis = dict(showgrid = False,showticklabels = False,showbackground= False),
-                ))     
-            camera = dict(eye=dict(x=0., y=2.5, z=0.))
-            fig.update_layout(scene_camera=camera) 
-            
-            for i in range(self.tm):
-                xx1= x1[i]
-                yy1= y1[i]
-                zz1= z1[i]
-                fig.add_trace(go.Scatter3d(x=xx1[j,:],y=yy1[j,:],z=zz1[j,:], mode='lines',      
-                    line=dict(
-                        # set color to an array/list of desired values
-                        width=5)))
-            frames.append({'data':copy.deepcopy(fig['data']),'name':f'frame{j+1}'})
-
-        fig.update(frames=frames)
-        updatemenus = [dict(
-                buttons = [
-                    dict(
-                        args = [None, {"frame": {"duration": 500, "redraw": True},
-                                "fromcurrent": True}],
-                        label = "Play",
-                        method = "animate"
-                        ),
-                    dict(
-                        args = [[None], {"frame": {"duration": 0, "redraw": False},
-                                  "mode": "immediate",
-                                  "transition": {"duration": 0}}],
-                        label = "Pause",
-                        method = "animate"
-                        )
-                ],
-                direction = "left",
-                pad = {"r": 10, "t": 87},
-                showactive = False,
-                type = "buttons",
-                x = 0.1,
-                xanchor = "right",
-                y = 0,
-                yanchor = "top"
-            )]  
-
-        sliders = [dict(steps = [dict(method= 'animate',
-                              args= [[f'frame{k}'],                           
-                              dict(mode= 'immediate',
-                                   frame= dict(duration=400, redraw=True),
-                                   transition=dict(duration= 0))
-                                 ],
-                              label=f'{k+1}'
-                             ) for k in range(n_frames)], 
-                        active=0,
-                        transition= dict(duration= 0 ),
-                        x=0, # slider starting position  
-                        y=0, 
-                        currentvalue=dict(font=dict(size=12), 
-                                  prefix='frame: ', 
-                                  visible=True, 
-                                  xanchor= 'center'
-                                 ),  
-                        len=1.0) #slider length
-                ]
-        fig.update_layout(width=800, height=800,  
-                  
-                  updatemenus=updatemenus,
-                  sliders=sliders)
-  
-
-        fig.update_layout(height=1200, width=1200)
-
-        return (fig)
 
     def def3D(self):
 
@@ -3281,8 +3189,8 @@ class RCF():
         """Returns a *Numpy 2D Array* of :class:`StrucPy.RCFA.RCF` objects presenting a combined global stiffness matrix of a Reinforced Concrete Frame. Global stiffness matrix has been formed as per the order of nodal number/name in ascending order.
          
         :param: None
-        :return: A DataFrame of :class:`StrucPy.RCFA.RCF` objects.
-        :rtype: pd.DataFrame
+        :return: A 2D numpy array of :class:`StrucPy.RCFA.RCF` objects.
+        :rtype: numpy.array
         """  
 
         if self.__Analysis_performed== False:
@@ -3314,7 +3222,7 @@ class RCF():
 
 
     def beamsD(self):
-        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` objects presenting details of all the beam elements in a reinforced concrete frame. It shows the nodes at which beam is connected, story of the beam, continuity at nodes, length in meters(m), cross-section in millimeters(mm), area in meters(m) moment of inertia in quartic meters(m\ :sup:`4`) and relative stiffness in cubic meters (m\ :sup:`3`) of beams. 
+        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` objects presenting details of all the beam elements in a reinforced concrete frame. It shows the nodes at which beam is connected, story of the beam, continuity at nodes, length in meters(m), cross-section in millimeters(mm), area in square meters, moment of inertia in quartic meters and relative stiffness in cubic meters of beams. 
          
         :param: None
         :return: A DataFrame of :class:`StrucPy.RCFA.RCF` objects.
@@ -3327,7 +3235,7 @@ class RCF():
         return(bd)
 
     def columnsD(self):
-        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` objects presenting details of all the column elements in a reinforced concrete frame. It shows the nodes at which column is connected, story of the column, length in meters(m), cross-section in millimeters(mm), area in meters(m\ :sup:`2`) moment of inertia in quartic meters(m\ :sup:`4`), relative stiffness in cubic meters (m\ :sup:`3`), effective length coefficient, effective length in meters(m) and type of columns (Pedestal, Short or Long). 
+        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCF` objects presenting details of all the column elements in a reinforced concrete frame. It shows the nodes at which column is connected, story of the column, length in meters(m), cross-section in millimeters(mm), area in square meters, moment of inertia in quartic meters, relative stiffness in cubic meters , effective length coefficient, effective length in meters(m) and type of columns (Pedestal, Short or Long). 
          
         :param: None
         :return: A DataFrame of :class:`StrucPy.RCFA.RCF` objects.
@@ -3366,7 +3274,7 @@ class RCF():
             raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
             
 
-        if self.__seismic_def_status == False:
+        if self.seismic_def_status == False:
             return ("Seismic analysis has not been used")
         else:
             return (np.round(self.__ASD,5))
@@ -3383,7 +3291,7 @@ class RCF():
             raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
             
 
-        if self.__seismic_def_status== False:
+        if self.seismic_def_status== False:
             return ("Seismic analysis has not been used")
         else:
             return (self.__SeismicShear)
@@ -3403,7 +3311,7 @@ class RCF():
          
         :param: None
         :return: A *List* of 2D  numpy array of :class:`StrucPy.RCFA.RCF` objects.
-        :rtype: numpy array
+        :rtype: List 
         """  
 
         if self.__Analysis_performed== False:
@@ -3525,7 +3433,7 @@ class RCF():
         """  
         cols= ["Zone Factor (Z)", "Importance Factor (I)", "Response Reduction Factor (R)",  "Design Accelaration Coefficient (Sag) based on Soil Type", "Damping (%)", "Soil Type", "Time Period (sec)", "Seismic Acceleration (Ah)", "Seismic Weight (kN)" ]
 
-        if self.__seismic_def_status== True:
+        if self.seismic_def_status== True:
             if (self.load_combo.iloc[0, 2:] >0).any():
                 self.__seismicD.columns= cols
                 return (self.__seismicD)
@@ -3632,7 +3540,9 @@ class RCF():
         :type node: int/list
         :return: None
         """
-
+        if self.__PreP_status == False:
+            raise Exception("Perform Pre-Processing of the structure using method 'preP' before changing frame")
+        
         if not isinstance(member, (int, list, str)):
             raise Exception ("The member ID provided is of wrong type. It can only be int, list of ID's, 'all', 'beam' or 'column' ")
 
@@ -4355,13 +4265,7 @@ class RCFenv():
         self.__memmaxForces[self.__memmaxForces.iloc[even_index,:]<0]= 9999999999
         self.__memmaxForces[self.__memmaxForces.iloc[odd_index,:]>0]= 9999999999
 
-        self.__memmaxForces.replace(9999999999, "--", inplace=True)
-
-        # self.__memmaxForces.loc[:,:,"+ve"]= self.__memmaxForces.loc[:,:,"+ve"].where(self.__memmaxForces.loc[:,:,"+ve"]>=0, "NA")
-
-        # self.__memmaxForces.loc[:,:,"-ve"]= self.__memmaxForces.loc[:,:,"-ve"].where(self.__memmaxForces.loc[:,:,"-ve"]<0, "NA")
-
-        # MAx value need to be calculated for design
+        self.__memmaxForces.replace(9999999999, 0, inplace=True)
 
     def __evalENVdef(self):
         

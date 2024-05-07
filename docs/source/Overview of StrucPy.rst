@@ -1,7 +1,7 @@
 Overview of StrucPy
 ====================
 
-**StrucPy** is a powerful python library for structural analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for optimization, design, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc. The uniqueness of *StrucPy* is that it gives full control to the user over the model. Apart from the result, user can always access and make change to the input arguments. Further user will have access to the data's generated during the analysis. Result are presented in apprehensible tabular form which can be exported.
+**StrucPy** is a powerful python library for structural analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, structural design, design optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc. The uniqueness of *StrucPy* is that it gives full control to the user over the model. Apart from the result, user can always access and make change to the input arguments. Further user will have access to the data's generated during the analysis. Result are presented in apprehensible tabular form which can be exported.
 
 Usually the model input can vary from 1 to 1000's members depending upon the complexity of the structure. StrucPy provides a simple method for input in form of *Dataframe*, capable of taking any number of input which can be easily be cross-checked and processed. StrucPy make handling structural complexity easier.
 
@@ -36,11 +36,11 @@ Dependencies
 ----------------
 Required Dependencies
 
-* **numpy**: used for matrix algebra and dense matrix solver
+* **numpy**: used for matrix manipulation and as dense matrix solver
 * **pandas**: used for taking input and presenting output
 * **plotly**: used for visualization and plotting
 * **ray**: used for fast processing
-* **openpyxl**: *optional* to read Excel files
+* **openpyxl**: To read Excel files
 
 
 ------------------------------------------------------

@@ -1,1 +1,0 @@
-from StrucPy import RCFA

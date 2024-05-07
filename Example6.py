@@ -1,4 +1,4 @@
-#Example 6: Changing the material properties of members of "RCFA Examples:Example 5".
+#Example 6: Changing the material properties of members of example 5.
 
 
 from StrucPy.RCFA import RCF

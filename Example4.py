@@ -47,28 +47,28 @@ nodal_displacements= r1.Gdisp()
 # View 3D Deflected Shape of Structure
 view_structure_deflected_shape= r1.def3D()
 
-view_structure_deflected_shape.show()                              # If using VS Code or JupiterNotebook
+view_structure_deflected_shape.show()                # If using VS Code or JupiterNotebook
 view_structure_deflected_shape.write_html("./plots/Ex4_defShape_model3D.html")              # To save model as html in your current directory
 
 
 # Getting Shear Force and Bending Moment Diagram of Member with ID- 756
 sfbmd= r1.sfbmd(12)
 
-sfbmd.show()                                     # If using VS Code or JupiterNotebook
-sfbmd.write_html("./plots/Ex4_SFBMD.html")              # To save model as html in your current directory
+sfbmd.show()                                 # If using VS Code or JupiterNotebook
+sfbmd.write_html("./plots/Ex4_SFBMD.html")   # To save model as html in your current directory
 
 # Getting Deflected Shape in Local Coordinate System of Member with ID- 756
 defL= r1.defL(12)
 
-defL.show()                                     # If using VS Code or JupiterNotebook
-defL.write_html("./plots/Ex4_defL.html")              # To save model as html in your current directory
+defL.show()                                  # If using VS Code or JupiterNotebook
+defL.write_html("./plots/Ex4_defL.html")     # To save model as html in your current directory
 
 
 # Getting Deflected Shape in Global Coordinate System of Member with ID- 756
 defG= r1.defG(12)
 
-defG.show()                                     # If using VS Code or JupiterNotebook
-defG.write_html("./plots/Ex4_defG.html")             # To save model as html in your current directory
+defG.show()                                # If using VS Code or JupiterNotebook
+defG.write_html("./plots/Ex4_defG.html")   # To save model as html in your current directory
 
 # Getting Material Properties
 material_properties= r1.Mproperties()

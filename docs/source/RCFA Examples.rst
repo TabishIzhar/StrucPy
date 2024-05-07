@@ -39,12 +39,20 @@ See :download:`Input Example1 <./Examples/Example1.xlsx>`.
 
     # Getting Shear Force and Bending Moment Diagram of Member with ID- 1
     sfbmd= r1.sfbmd(1)
+    sfbmd.show()                         # If using VS Code or JupiterNotebook
+    sfbmd.write_html("./plots/Ex1_SFBMD.html")    # To save model as html in your current directory
+
 
     # Getting Deflected Shape in Local Coordinate System of Member with ID- 1
     defL= r1.defL(1)
+    defL.show()                      # If using VS Code or JupiterNotebook
+    defL.write_html("./plots/Ex1_defL.html")     # To save model as html in your current directory
+
 
     # Getting Deflected Shape in Global Coordinate System of Member with ID- 1
     defG= r1.defG(1)
+    defG.show()                     # If using VS Code or JupiterNotebook
+    defG.write_html("./plots/Ex1_defG.html")     # To save model as html in your current directory
 
     # Getting Material Properties
     material_properties= r1.Mproperties()
@@ -85,12 +93,20 @@ See :download:`Input Example2 <./Examples/Example2.xlsx>`.
 
     # Getting Shear Force and Bending Moment Diagram of Member with ID- 1
     sfbmd= r1.sfbmd(1)
+    sfbmd.show()                                  # If using VS Code or JupiterNotebook
+    sfbmd.write_html("./plots/Ex2_SFBMD.html")    # To save model as html in your current directory
+
 
     # Getting Deflected Shape in Local Coordinate System of Member with ID- 1
     defL= r1.defL(1)
+    defL.show()                                   #  If using VS Code or JupiterNotebook
+    defL.write_html("./plots/Ex2_defL.html")      # To save model as html in your current directory
+
 
     # Getting Deflected Shape in Global Coordinate System of Member with ID- 1
     defG= r1.defG(1)
+    defG.show()                                  # If using VS Code or JupiterNotebook
+    defG.write_html("./plots/Ex2_defG.html")     # To save model as html in your current directory
 
     # Getting Material Properties
     material_properties= r1.Mproperties()
@@ -130,7 +146,7 @@ See :download:`Input Example3 <./Examples/Example3.xlsx>`.
     view_3Dmodel= r1.model3D()
 
     view_3Dmodel.show()                                     # If using VS Code or JupiterNotebook
-    view_3Dmodel.write_html("./model3D.html")              # To save model as html in C drive
+    view_3Dmodel.write_html("./Ex3_model3D.html")              # To save model as html in C drive
 
 
     # Getting Reactions
@@ -145,35 +161,28 @@ See :download:`Input Example3 <./Examples/Example3.xlsx>`.
     view_structure_deflected_shape= r1.def3D()
 
     view_structure_deflected_shape.show()                              # If using VS Code or JupiterNotebook
-    view_structure_deflected_shape.write_html("./model3D.html")       # To save model as html in C drive
-
-
-    # To generate 3D Deflection Animation of Structure
-    view_deflection_animation= r1.aniDef()
-
-    view_deflection_animation.show()                                     # If using VS Code or JupiterNotebook
-    view_deflection_animation.write_html("./model3D.html")              # To save model as html in C drive
+    view_structure_deflected_shape.write_html("./Ex3_defShape.html")       # To save model as html in C drive
 
 
     # Getting Shear Force and Bending Moment Diagram of Member with ID- 756
     sfbmd= r1.sfbmd(756)
 
     sfbmd.show()                                     # If using VS Code or JupiterNotebook
-    sfbmd.write_html("./model3D.html")              # To save model as html in C drive
+    sfbmd.write_html("./Ex3_sfbmd.html")              # To save model as html in C drive
 
 
     # Getting Deflected Shape in Local Coordinate System of Member with ID- 756
     defL= r1.defL(756)
 
     defL.show()                                     # If using VS Code or JupiterNotebook
-    defL.write_html("./model3D.html")              # To save model as html in C drive
+    defL.write_html("./Ex3_defl.html")              # To save model as html in C drive
 
 
     # Getting Deflected Shape in Global Coordinate System of Member with ID- 756
     defG= r1.defG(756)
 
     defG.show()                                     # If using VS Code or JupiterNotebook
-    defG.write_html("./model3D.html")              # To save model as html in C drive
+    defG.write_html("./Ex3_G.html")              # To save model as html in C drive
 
 
     # Getting Material Properties
@@ -244,7 +253,7 @@ See :download:`Input Example4 <./Examples/Example4.xlsx>`.
     view_3Dmodel= r1.model3D()
 
     view_3Dmodel.show()                                     # If using VS Code or JupiterNotebook
-    view_3Dmodel.write_html("./model3D.html")              # To save model as html in C drive
+    view_3Dmodel.write_html("./Ex4_model3D.html")              # To save model as html in C drive
 
     # Getting Reactions
     base_reactions= r1.reactions()
@@ -257,36 +266,28 @@ See :download:`Input Example4 <./Examples/Example4.xlsx>`.
     # View 3D Deflected Shape of Structure
     view_structure_deflected_shape= r1.def3D()
 
-    view_structure_deflected_shape.show()                              # If using VS Code or JupiterNotebook
-    view_structure_deflected_shape.write_html("./model3D.html")       # To save model as html in C drive
-
-
-    # To generate 3D Deflection Animation of Structure
-    view_deflection_animation= r1.aniDef()
-
-    view_deflection_animation.show()                                     # If using VS Code or JupiterNotebook
-    view_deflection_animation.write_html("./model3D.html")              # To save model as html in C drive
-
+    view_structure_deflected_shape.show()                  # If using VS Code or JupiterNotebook
+    view_structure_deflected_shape.write_html("./Ex4_def3D.html")       # To save model as html in C drive
 
     # Getting Shear Force and Bending Moment Diagram of Member with ID- 756
     sfbmd= r1.sfbmd(12)
 
     sfbmd.show()                                     # If using VS Code or JupiterNotebook
-    sfbmd.write_html("./model3D.html")              # To save model as html in C drive
+    sfbmd.write_html("./Ex4_sfbmd.html")              # To save model as html in C drive
 
 
     # Getting Deflected Shape in Local Coordinate System of Member with ID- 756
     defL= r1.defL(12)
 
     defL.show()                                     # If using VS Code or JupiterNotebook
-    defL.write_html("./model3D.html")              # To save model as html in C drive
+    defL.write_html("./Ex4_defL.html")              # To save model as html in C drive
 
 
     # Getting Deflected Shape in Global Coordinate System of Member with ID- 756
     defG= r1.defG(12)
 
     defG.show()                                     # If using VS Code or JupiterNotebook
-    defG.write_html("./model3D.html")              # To save model as html in C drive
+    defG.write_html("./Ex4_defG.html")              # To save model as html in C drive
 
 
     # Getting Material Properties
@@ -373,7 +374,7 @@ See :download:`Input Example5 <./Examples/Example5.xlsx>`.
     drift= r1.Sdrift()    
 
 
-Example 6: Changing the material properties of members of "RCFA Examples:Example 5".
+Example 6: Changing the material properties of members Examples 5.
 -----------------------------------------------------------------------------------------
 See :download:`Input Example6 <./Examples/Example6.xlsx>`.
 

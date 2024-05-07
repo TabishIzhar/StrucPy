@@ -11,7 +11,7 @@ Welcome to StrucPy's documentation!
    :caption: Contents:
 
    Overview of StrucPy
-   usage
+   Installation
    Input Parameters
    modules
    Examples
