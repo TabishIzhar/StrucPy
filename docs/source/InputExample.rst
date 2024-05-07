@@ -93,7 +93,7 @@ Generate Frame
 
 `framegen` rows and columns are **positional arguments**.
 
-.. figure::  ./images/framegen.png
+.. figure::  ./images/FG.png
    :align: center
 
 ------------------------
