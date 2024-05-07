@@ -374,7 +374,7 @@ See :download:`Input Example5 <./Examples/Example5.xlsx>`.
     drift= r1.Sdrift()    
 
 
-Example 6: Changing the material properties of members Examples 5.
+Example 6: Changing the material properties of members in Examples 5.
 -----------------------------------------------------------------------------------------
 See :download:`Input Example6 <./Examples/Example6.xlsx>`.
 
