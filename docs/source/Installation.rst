@@ -1,5 +1,5 @@
 Installation
-=====
+=============
 
 You will need Python and a few packages as dependency for StrucPy on your system.
 
@@ -18,12 +18,14 @@ Install the StrucPy
 You can install StrucPy with pip! It will take care of all dependencies and their versions.
 
 .. code-block:: python
-   **$ py -3 -m pip install StrucPy**
+
+   py -3 -m pip install StrucPy
 
 In case you need a specific version of the package, that’s possible too. Simple declare the version condition over the code in terminal.
 
 .. code-block:: python
-   **$ py -3 -m pip install StrucPy==0.0.1**
+
+   py -3 -m pip install StrucPy==0.0.1
 
 
 
@@ -35,18 +37,22 @@ Alternatively, you can build the package from the source by cloning the source f
 
 2. Form a virtual environment using 
 
-.. code-block:: python
-   **$ py -3 -m venv venvStrucPy**
+.. code-block::python
+
+   py -3 -m venv venvStrucPy
 
 3. Activate virtual environment from cmd
 
 .. code-block:: python
-   **.\venv\Scripts\activate.bat**
+
+   .\venv\Scripts\activate.bat
 
 4. Install every dependency using requirement.txt
 
 .. code-block:: python
-   **(.venv) $ pip install -r requirements.txt**
+
+   pip install -r requirements.txt
+
 
 
 
