@@ -16,11 +16,13 @@ Dependency
 Install the StrucPy
 -------------------------------
 You can install StrucPy with pip! It will take care of all dependencies and their versions.
-.. code-block:: console
+
+.. code-block:: python
    **$ py -3 -m pip install StrucPy**
 
 In case you need a specific version of the package, that’s possible too. Simple declare the version condition over the code in terminal.
-.. code-block:: console
+
+.. code-block:: python
    **$ py -3 -m pip install StrucPy==0.0.1**
 
 
@@ -32,15 +34,18 @@ Alternatively, you can build the package from the source by cloning the source f
 1. Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**.
 
 2. Form a virtual environment using 
-.. code-block:: console
+
+.. code-block:: python
    **$ py -3 -m venv venvStrucPy**
 
 3. Activate virtual environment from cmd
-.. code-block:: console
+
+.. code-block:: python
    **.\venv\Scripts\activate.bat**
 
 4. Install every dependency using requirement.txt
-.. code-block:: console
+
+.. code-block:: python
    **(.venv) $ pip install -r requirements.txt**
 
 
