@@ -7,7 +7,7 @@ with open("README.md") as f:
 # This call to setup() does all the work
 setup(
     name="StrucPy",
-    version="0.0.1",
+    version="0.0.0.6",
     description="Object Oriented Structural Analysis",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -21,7 +21,7 @@ setup(
     package_dir= {"":"src"},
     packages=find_packages(where='src'),
     include_package_data=False,
-    install_requires=["numpy>=1.23.3", "pandas>=1.4.4", "plotly>=5.10.0", "ray>=2.6.1", "openpyxl>=3.0.10" ],
+    install_requires=["numpy==1.23.3", "pandas==1.4.4", "plotly==5.10.0", "ray==2.6.1", "openpyxl==3.0.10" ],
     extras_require={
         "dev": ["pytest>=7.0","twine>=4.0.2"],
     },
