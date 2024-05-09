@@ -1,6 +1,8 @@
 # StrucPy
 
-**StrucPy** is a powerful python library for structural analysis. It give's complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, structural design, design optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
+[![Unit Tests](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml/badge.svg)](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml) [![Documentation Status](https://readthedocs.org/projects/strucpy/badge/?version=latest)](https://strucpy.readthedocs.io/en/latest/?badge=latest) [![LGPLv2.1 License](https://img.shields.io/badge/License-LGPL%20v2.1-yellow.svg)](https://opensource.org/licenses/)
+
+**StrucPy** is a powerful python library for structural analysis. It gives complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, structural design, design optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
 
 ------------------------------------------------------------------------------------------------------------
 ## Modules 
@@ -16,7 +18,7 @@ Objective of **StrucPy** is to provide an easy to use open-source library for th
 
 *User Friendly*: StrucPy provides a user-friendly approach for the analysis of structure without the use of extensive coding. Its powerful methods perform almost every function required before and after analysis.  It reduces the user loads by allowing to pass input arguments through Excel formats. 
 
-*Platform for Design Optimization*: StrucPy gives full access to pre- and post-analysis data of the structure. User can use those data's as per their requirement and research. Thus eliminates lack of control over data exchange and dependency on commercial software to perform analysis. 
+*Platform for Structural Analysis*: StrucPy gives full access to pre- and post-analysis data of the civil engineering structure. User can use those data's as per their requirement and research. Thus eliminates lack of control over data exchange and dependency on commercial software to perform analysis. 
 
 *Validity*: StrucPy are continuously monitored to remove any bugs and errors. The output of StrucPy is verified with the commercial software's like Bentley's STAAD PRO connect edition. Users are requested to report any issue/error encountered while using StrucPy.
 
@@ -51,7 +53,6 @@ Required Dependencies
 * Produces reactions and joint deflections' data. 
 * Produces the 3D view of input RC model.
 * Produces the deflected shape of RCF model.
-* Produces animation of deflected shape of RCF model.
 * Gives accessibility to data of shear forces, bending moments, and deflection of every member.  
 * Produces the diagrams of shear forces, bending moments, and deflection of every member.
 * Allows the passing of load combinations.
@@ -66,11 +67,10 @@ Required Dependencies
 -----------------------------------------------------------------------------------------------------------
 ## StrucPy Coordinate System 
 
-Follow right-hand rule for coordinate system, the right thumb points along the z-axis in the positive direction and the curling motion of the fingers of the right hand represents a motion from the first or x-axis to the second or y-axis. 
+Follow left-hand rule for coordinate system, the left thumb points along the y-axis in the positive direction. Gravity load acts along y-axis.
 
-Gravity loads acting along y-axis.
+![](https://drive.google.com/file/d/11R0xjPRELNxWBfIFui6kXTP1_RKK-gW8/view?usp=sharing)
 
-![Alt text](./CordSys.JPG)
 
 ------------------------------------------------------------------------------------------------------------
 
@@ -82,10 +82,20 @@ https://strucpy.readthedocs.io/
 
 ## Installation 
 
+Always create a virtual environment to install `StrucPy` and its dependencies.
+
+1) Creating Virtual environment
+```
+    $ py -3 -m venv venv
+```
+2) Activate virtual environment from cmd
+```
+    .\venv\Scripts\activate.bat
+```
+3) Install `StrucPy`
 ```
     $ py -3 -m pip install StrucPy
 ```
-
 ------------------------------------------------------------------------------------------------------------
 
 ## Cloning Git repository
@@ -121,8 +131,8 @@ For proper visualization of graphs and models.
 
 ```python
 
-from RCFA import RCF
-from RCFA import RCFenv
+from StrucPy.RCFA import RCF
+from StrucPy.RCFA import RCFenv
 import pandas as pd
 
 # importing input data from file Example7, avaiable in InputFiles folder
@@ -132,8 +142,10 @@ boundcond = pd.read_excel('./InputFiles/Example7.xlsx', 'boundary', header = 0, 
 load_combo= pd.read_excel('./InputFiles/Example7.xlsx', 'load_combinations', header = 0, index_col=0)
 seismic_defination= pd.read_excel('./InputFiles/Example7.xlsx', 'Seismic_Defination', header = 0, index_col=0)
 
-#Creating Structural object r1 fopr single load combination and r2 for multiple load combination
+#Creating Structural object r1 for single load combination and r2 for multiple load combination
+
 r1= RCF(nodes_details,member_details,boundcond, load_combo= load_combo.iloc[0,:], autoflooring= True, seismic_def= seismic_defination)
+
 r2= RCFenv(nodes_details,member_details,boundcond, load_combo= load_combo, autoflooring= True, seismic_def= seismic_defination)
 
 
