@@ -1,4 +1,5 @@
 # StrucPy
+[![Unit Tests](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml/badge.svg)](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml) [![LGPLv2.1 License](https://img.shields.io/badge/License-LGPL%20v2.1-yellow.svg)](https://opensource.org/licenses/)
 
 [![Unit Tests](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml/badge.svg)](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml) [![Documentation Status](https://readthedocs.org/projects/strucpy/badge/?version=latest)](https://strucpy.readthedocs.io/en/latest/?badge=latest) [![LGPLv2.1 License](https://img.shields.io/badge/License-LGPL%20v2.1-yellow.svg)](https://opensource.org/licenses/)
 
