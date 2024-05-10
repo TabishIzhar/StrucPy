@@ -38,8 +38,8 @@ jobs:
       run: |
         pytest
         
-    - name: Pytest coverage comment
-      uses: MishaKav/pytest-coverage-comment@main
+    - name: "Upload coverage data"
+      uses: actions/upload-artifact@v3
       with:
-        pytest-coverage-path: ./pytest-coverage.txt
-        junitxml-path: ./pytest.xml
+        name: covdata
+        path: .coverage.*
