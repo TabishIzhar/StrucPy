@@ -101,7 +101,7 @@ Always create a virtual environment to install `StrucPy` and its dependencies.
 
 1) Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
 
-2) Form a virtual environment using 
+2) Create a virtual environment using 
 ```
     $ py -3 -m venv venv
 ```
@@ -162,6 +162,7 @@ r2.RCanalysis()
 
 #Call methods as per the requirement
 ```
+Note: Install `StrucPy` before trying examples.
 ------------------------------------------------------------------------------------------------------------
 ## Contributing
 

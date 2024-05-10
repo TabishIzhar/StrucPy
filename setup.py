@@ -3,11 +3,9 @@ from setuptools import find_packages, setup
 with open("README.md") as f:
     long_description= f.read()
 
-# This call to setup() does all the work
-# This call to setup() does all the work
 setup(
     name="StrucPy",
-    version="0.0.0.6",
+    version="0.0.1",
     description="Object Oriented Structural Analysis",
     long_description=long_description,
     long_description_content_type="text/markdown",

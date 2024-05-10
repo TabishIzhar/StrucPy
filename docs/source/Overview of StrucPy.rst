@@ -72,7 +72,6 @@ RCFA
 * Produces reactions and joint deflections' data. 
 * Produces the 3D view of input RC model.
 * Produces the deflected shape of RCF model.
-* Produces animation of deflected shape of RCF model.
 * Gives accessibility to data of shear forces, bending moments, and deflection of every member.  
 * Produces the diagrams of shear forces, bending moments, and deflection of every member.
 * Allows the passing of load combinations.

@@ -1,19 +1,18 @@
-#Example 1: Analysis of fixed Beam With multiple point loads using :class:`StrucPy.RCFA.RCF`.
+# Unit Tests on StrucPy RCFA
 
-from StrucPy.RCFA import RCF
-from StrucPy.RCFA import RCFenv
+from src.StrucPy.RCFA import RCF
+from src.StrucPy.RCFA import RCFenv
 import pandas as pd
 import numpy as np
 import pytest
-import ray
 
 class Test_RCF_beam:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    member_details= pd.read_excel('src/test/inputfile_RCFA_beam.xlsx', 'members', header = 0, index_col=0)
-    nodes_details= pd.read_excel('src/test/inputfile_RCFA_beam.xlsx', 'nodes', header = 0, index_col=0)
-    boundcond = pd.read_excel('src/test/inputfile_RCFA_beam.xlsx', 'boundary', header = 0, index_col=0)
-    point_loads= pd.read_excel('src/test/inputfile_RCFA_beam.xlsx', 'point_loads', header = 0, index_col=0)
+    member_details= pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'members', header = 0, index_col=0)
+    nodes_details= pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'nodes', header = 0, index_col=0)
+    boundcond = pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'boundary', header = 0, index_col=0)
+    point_loads= pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'point_loads', header = 0, index_col=0)
 
     # Creating Object
     r1= RCF(nodes_details,member_details,boundcond,point_loads=point_loads,self_weight=False)
@@ -89,10 +88,10 @@ class Test_RCF_beam:
 class Test_RCF_2D_Frame:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    member_details= pd.read_excel('src/test/inputfile_RCFA_2D_Frame.xlsx', 'members', header = 0, index_col=0)
-    nodes_details= pd.read_excel('src/test/inputfile_RCFA_2D_Frame.xlsx', 'nodes', header = 0, index_col=0)
-    boundcond = pd.read_excel('src/test/inputfile_RCFA_2D_Frame.xlsx', 'boundary', header = 0, index_col=0)
-    forcesnodal= pd.read_excel('src/test/inputfile_RCFA_2D_Frame.xlsx', 'forcevec', header = 0, index_col=0)
+    member_details= pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'members', header = 0, index_col=0)
+    nodes_details= pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'nodes', header = 0, index_col=0)
+    boundcond = pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'boundary', header = 0, index_col=0)
+    forcesnodal= pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'forcevec', header = 0, index_col=0)
 
     # Creating Object
     r2= RCF(nodes_details,member_details,boundcond,forcesnodal=forcesnodal,self_weight=True)
@@ -184,9 +183,9 @@ class Test_RCF_2D_Frame:
 class Test_RCF_3D_Frame:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    framegen=  pd.read_excel('src/test/inputfile_RCFA_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
-    seismic_defination= pd.read_excel('src/test/inputfile_RCFA_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
-    load_combo= pd.read_excel('src/test/inputfile_RCFA_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
+    framegen=  pd.read_excel('test/inputfile_RCFA_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
+    seismic_defination= pd.read_excel('test/inputfile_RCFA_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
+    load_combo= pd.read_excel('test/inputfile_RCFA_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
 
     # Creating RC frame object for analysis
     r3= RCF(nodes_details = None,member_details= None,boundarycondition= None,framegen= framegen,seismic_def=seismic_defination, load_combo= load_combo,  autoflooring= True) 
@@ -427,9 +426,9 @@ class Test_RCF_3D_Frame:
 class Test_RCFenv_3D_Frame:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    framegen=  pd.read_excel('src/test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
-    seismic_defination= pd.read_excel('src/test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
-    load_combo= pd.read_excel('src/test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
+    framegen=  pd.read_excel('test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
+    seismic_defination= pd.read_excel('test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
+    load_combo= pd.read_excel('test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
 
 
     # Creating RC frame object for analysis
