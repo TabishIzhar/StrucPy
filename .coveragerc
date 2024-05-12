@@ -1,0 +1,8 @@
+[run]
+
+source = src/StrucPy
+ 
+omit = src\StrucPy\__init__.py
+        src\StrucPy\_RCSingle.py
+        src\StrucPy\_arrangeCal.py
+        src\StrucPy\_forcesCal.py

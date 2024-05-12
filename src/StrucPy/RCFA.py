@@ -1782,7 +1782,6 @@ class RCF():
             else:
                 eq2= np.hstack((eq2,i))  #storing position of unknown displacement
 
-
         # Forming new Equilibrium matrix's 
         ln = np.size(eq2)
         Kg1 = np.zeros([ln,ln])
@@ -4063,9 +4062,6 @@ class RCFenv():
         if self.__PreP_status== False:
             raise Exception ("Please perform the analyis of structure first by calling function 'RCAnalysis' ")
         
-        # for i in range (len(self.__OB)):
-        #     self.__OB[i].RCanalysis.remote()
-        #     print ("DONE ", i)
 
         [self.__OB[i].RCanalysis.remote() for i in range (len(self.__OB))]
 
@@ -4593,7 +4589,7 @@ class RCFenv():
         return (self.__dsgDefL)
 
     def getGDefmax(self):
-        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCFenv` objects presenting maximum deflection detail of members in reinforced concrete frame (among every load combinations) in 'Gocal Coordinate System'. It can be used for the final result analysis and design. 
+        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCFenv` objects presenting maximum deflection detail of members in reinforced concrete frame (among every load combinations) in 'GLobal Coordinate System'. It can be used for the final result analysis and design. 
          
         :param: None
         :return: A multiindex DataFrame of :class:`StrucPy.RCFA.RCFenv` objects.
@@ -4610,7 +4606,7 @@ class RCFenv():
         return (self.__dsgDefG)
     
     def getLClist(self):
-        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCFenv` objects presenting maximum deflection detail of members in reinforced concrete frame (among every load combinations) in 'Gocal Coordinate System'. It can be used for the final result analysis and design. 
+        """Returns a *DataFrame* of :class:`StrucPy.RCFA.RCFenv` objects presenting list of load combinations. 
          
         :param: None
         :return: A multiindex DataFrame of :class:`StrucPy.RCFA.RCFenv` objects.

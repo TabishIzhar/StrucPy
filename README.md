@@ -1,9 +1,54 @@
 # StrucPy
 [![Unit Tests](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml/badge.svg)](https://github.com/TabishIzhar/StrucPy/actions/workflows/python-app.yml) [![Documentation Status](https://readthedocs.org/projects/strucpy/badge/?version=latest)](https://strucpy.readthedocs.io/en/latest/?badge=latest) [![LGPLv2.1 License](https://img.shields.io/badge/License-LGPL%20v2.1-yellow.svg)](https://opensource.org/licenses/)
 
-**StrucPy** is a powerful python library for structural analysis. It gives complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, structural design, design optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
+**StrucPy** is a powerful python library for structural analysis of civil engineering structures. It gives complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, for retrieving data for structural design and optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
 
 ------------------------------------------------------------------------------------------------------------
+
+## StrucPy Documentation
+
+https://strucpy.readthedocs.io/
+
+------------------------------------------------------------------------------------------------------------
+
+## Installation 
+
+Always create a virtual environment to install `StrucPy` and its dependencies.
+
+1) Creating Virtual environment
+```
+    $ py -3 -m venv venv
+```
+2) Activate virtual environment from cmd
+```
+    .\venv\Scripts\activate.bat
+```
+3) Install `StrucPy`
+```
+    $ py -3 -m pip install StrucPy
+```
+------------------------------------------------------------------------------------------------------------
+
+## Cloning Git repository
+
+1) Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
+
+2) Create a virtual environment using 
+```
+    $ py -3 -m venv venv
+```
+
+3) Activate virtual environment from cmd
+```
+    .\venv\Scripts\activate.bat
+```
+
+4) Install every dependency using requirement.txt
+```
+    (.venv) $ pip install -r requirements.txt
+```
+------------------------------------------------------------------------------------------------------------
+
 ## Modules 
 
 * **RCFA** - Structural analysis module for Reinforced Concrete Framed Structures 
@@ -73,49 +118,6 @@ Follow left-hand rule for coordinate system, the left thumb points along the y-a
 
 ------------------------------------------------------------------------------------------------------------
 
-## StrucPy Documentation
-
-https://strucpy.readthedocs.io/
-
-------------------------------------------------------------------------------------------------------------
-
-## Installation 
-
-Always create a virtual environment to install `StrucPy` and its dependencies.
-
-1) Creating Virtual environment
-```
-    $ py -3 -m venv venv
-```
-2) Activate virtual environment from cmd
-```
-    .\venv\Scripts\activate.bat
-```
-3) Install `StrucPy`
-```
-    $ py -3 -m pip install StrucPy
-```
-------------------------------------------------------------------------------------------------------------
-
-## Cloning Git repository
-
-1) Clone the repository using **https://github.com/TabishIzhar/StrucPy.git**
-
-2) Create a virtual environment using 
-```
-    $ py -3 -m venv venv
-```
-
-3) Activate virtual environment from cmd
-```
-    .\venv\Scripts\activate.bat
-```
-
-4) Install every dependency using requirement.txt
-```
-    (.venv) $ pip install -r requirements.txt
-```
-------------------------------------------------------------------------------------------------------------
 
 ## Preferred Integrated Development Environment (IDE)
 

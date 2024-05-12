@@ -5,14 +5,15 @@ from src.StrucPy.RCFA import RCFenv
 import pandas as pd
 import numpy as np
 import pytest
+import copy
 
 class Test_RCF_beam:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    member_details= pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'members', header = 0, index_col=0)
-    nodes_details= pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'nodes', header = 0, index_col=0)
-    boundcond = pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'boundary', header = 0, index_col=0)
-    point_loads= pd.read_excel('test/inputfile_RCFA_beam.xlsx', 'point_loads', header = 0, index_col=0)
+    member_details= pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'members', header = 0, index_col=0)
+    nodes_details= pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'nodes', header = 0, index_col=0)
+    boundcond = pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'boundary', header = 0, index_col=0)
+    point_loads= pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'point_loads', header = 0, index_col=0)
 
     # Creating Object
     r1= RCF(nodes_details,member_details,boundcond,point_loads=point_loads,self_weight=False)
@@ -60,14 +61,11 @@ class Test_RCF_beam:
     def test_reactions(self):
         # Unit Test on Reactions
         reactions= self.r1.reactions()
-        print (((reactions-self.actual_reactions1)==0).all().all())
         assert (((reactions-self.actual_reactions1)==0).all().all())
 
     def test_Gdisp(self):
         # Unit Test on global nodal displacement
         gdisp= self.r1.Gdisp()
-        print
-        print ((gdisp==self.actual_disp1).all().all())
         assert ((gdisp==self.actual_disp1).all().all())
 
     def test_maxmemF(self):
@@ -77,21 +75,60 @@ class Test_RCF_beam:
 
     def test_maxdefL(self):
         # Unit Test on maximum deflection in both local and global coordinate system
-        defl= self.r1.maxdefL()
-        defLD= self.r1.defLD()[0]
-        defGD= self.r1.defGD()[0]
+        defl = self.r1.maxdefL()
+        defLD = self.r1.defLD()[0]
+        defGD = self.r1.defGD()[0]
 
-        relative_error= abs((defl.min(axis=0)[1]- self.max_defl)/self.max_defl)
+        relative_error = abs((defl.min(axis=0)[1]- self.max_defl)/self.max_defl)
         assert (relative_error<=0.05) and (((defGD-defLD)==0).all()== True)
+
+    def test_Mproperties(self):
+        # Unit Test on Mproperties
+        mp= self.r1.Mproperties()
+        assert (len(mp.columns)==9) and (mp.iloc[0,2]==25) and (mp.iloc[0,3]==25) and (mp.iloc[0,4]==25000000) 
+
+class Test_Exceptions:
+    member_details= pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'members', header = 0, index_col=0)
+    nodes_details= pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'nodes', header = 0, index_col=0)
+    boundcond = pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'boundary', header = 0, index_col=0)
+    point_loads= pd.read_excel('tests/inputfile_RCFA_beam.xlsx', 'point_loads', header = 0, index_col=0)
+
+    def test_input_nodes_details(self):
+
+        with pytest.raises(TypeError) as excinfo:  
+            r1= RCF(5,self.member_details,self.boundcond,point_loads=self.point_loads,self_weight=False)  
+        assert str(excinfo.value) == "Type of the argument `nodes_details` must be DataFrame"  
+
+    def test_input_member_details(self):
+
+        with pytest.raises(TypeError) as excinfo:  
+            r1= RCF(self.nodes_details,5,self.boundcond,point_loads=self.point_loads,self_weight=False)  
+        assert str(excinfo.value) == "Type of the argument `member_details` must be DataFrame"
+
+    def test_input_member_details_format(self):
+
+        md = self.member_details.copy()
+        print (md)
+        md.drop(['Node 1'], axis=1,inplace=True)
+
+        with pytest.raises(Exception) as excinfo:  
+            r1= RCF(self.nodes_details,md,self.boundcond,point_loads=self.point_loads,self_weight=False)  
+        assert str(excinfo.value) == "MEMBER DETAILS must have 7 columns: ['Node1', 'Node2', 'b', 'd', 'xUDL', 'yUDL', 'zUDL']. First 4 columns are mandotory argument while last three columns presenting member udl  can be left empty or with zero, but all column must be there."
+
+    def test_method_order(self):
+        with pytest.raises(Exception) as excinfo:  
+            r0 = RCF(self.nodes_details,self.member_details,self.boundcond,point_loads = self.point_loads,self_weight=False)
+            r0.RCanalysis()  
+        assert str(excinfo.value)=="Perform Pre-processing of the structure using method 'preP' before performing analysis."
 
 
 class Test_RCF_2D_Frame:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    member_details= pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'members', header = 0, index_col=0)
-    nodes_details= pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'nodes', header = 0, index_col=0)
-    boundcond = pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'boundary', header = 0, index_col=0)
-    forcesnodal= pd.read_excel('test/inputfile_RCFA_2D_Frame.xlsx', 'forcevec', header = 0, index_col=0)
+    member_details = pd.read_excel('tests/inputfile_RCFA_2D_Frame.xlsx', 'members', header = 0, index_col=0)
+    nodes_details = pd.read_excel('tests/inputfile_RCFA_2D_Frame.xlsx', 'nodes', header = 0, index_col=0)
+    boundcond = pd.read_excel('tests/inputfile_RCFA_2D_Frame.xlsx', 'boundary', header = 0, index_col=0)
+    forcesnodal = pd.read_excel('tests/inputfile_RCFA_2D_Frame.xlsx', 'forcevec', header = 0, index_col=0)
 
     # Creating Object
     r2= RCF(nodes_details,member_details,boundcond,forcesnodal=forcesnodal,self_weight=True)
@@ -102,22 +139,22 @@ class Test_RCF_2D_Frame:
     # Performing Analysis
     r2.RCanalysis()
 
-    actual_reactions2= np.array([[-365.922,31.368,0,0,0,819.652],
+    actual_reactions2 = np.array([[-365.922,31.368,0,0,0,819.652],
                                 [-134.078,503.507,0,0,0,0]])
 
-    actual_disp2= np.array([[0,0,0,0,0,0],
+    actual_disp2 = np.array([[0,0,0,0,0,0],
                             [159.068,-0.048,0,0,0,-0.021],
                             [158.869,-0.887,0,0,0,0.003],
                             [0,0,0,0,0,-0.061]])
 
-    actual_mem_forces=np.array([[31.368,365.922,0.0,0.0,0.0,819.652],
+    actual_mem_forces = np.array([[31.368,365.922,0.0,0.0,0.0,819.652],
                                 [0,	0, 0.0,	0.0,	0.0, -644.036],
                                 [134.078,22.368,0.0,0.0,0.0,536.312],
                                 [0, -494.507, 0.0, 0.0, 0.0, -644.383],
                                 [503.507, 134.078, 0.0, 0.0, 0.0, 0.0],
                                 [0, 0, 0.0, 0.0, 0.0, -536.312]])
 
-    actual_mem_delf_local=np.array([[0, 18.647, 0],
+    actual_mem_delf_local = np.array([[0, 18.647, 0],
                                     [0,	-4.927, 0],
                                     [0, 0, 0],
                                     [0, -19.053, 0],
@@ -183,9 +220,9 @@ class Test_RCF_2D_Frame:
 class Test_RCF_3D_Frame:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    framegen=  pd.read_excel('test/inputfile_RCFA_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
-    seismic_defination= pd.read_excel('test/inputfile_RCFA_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
-    load_combo= pd.read_excel('test/inputfile_RCFA_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
+    framegen=  pd.read_excel('tests/inputfile_RCFA_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
+    seismic_defination= pd.read_excel('tests/inputfile_RCFA_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
+    load_combo= pd.read_excel('tests/inputfile_RCFA_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
 
     # Creating RC frame object for analysis
     r3= RCF(nodes_details = None,member_details= None,boundarycondition= None,framegen= framegen,seismic_def=seismic_defination, load_combo= load_combo,  autoflooring= True) 
@@ -200,6 +237,7 @@ class Test_RCF_3D_Frame:
     r3.preP()
     r3.changeFL(thickness= 100, LL= -3 , FF=-5, WP=0)
     
+    floorD=r3.floorD()
     # Performing Analysis
     r3.RCanalysis()
 
@@ -327,6 +365,7 @@ class Test_RCF_3D_Frame:
                             [170.791,-10.623,0,0,0,0],
                             [168.434,-7.044,-0.038,-0.002,0,-0.001]])
 
+    
     actual_seismic_detail= np.array([[0.16,1.5,3,1.415,5,2,0.96140,0.0566,19512.00]])
     
     actual_seismic_shear= np.array([[1104.07],[12.358],[49.433],[111.224],[197.731],[308.955],[424.374]])
@@ -344,6 +383,12 @@ class Test_RCF_3D_Frame:
                                     [0, -19.053, 0],
                                     [0, 0, 0],
                                     [0, -32.615, 0]])
+
+    def test_floorD(self):
+        #check function of changeFL and floorD
+        assert ((self.floorD["Thickness(mm)"]==100).all()==True) and ((self.floorD["FF(kN/m2)"]==-5).all()==True) and ((self.floorD["LL(kN/m2)"]==-3).all()==True)
+
+
     def test_model3D(self):
         figure= self.r3.model3D()
 
@@ -421,25 +466,85 @@ class Test_RCF_3D_Frame:
 
         assert ((relative_error19<= 1).all().all()== True) and ((relative_error220<= 1).all().all()== True)
 
+    def test_beamsD(self):
+        #check function beamsD
+        bd = self.r3.beamsD()
+        assert (len(bd.columns)==16) and (len(bd)==132)
 
-  
+    def test_columnsD(self):
+        #check function columnsD
+        cd = self.r3.columnsD()
+        assert (len(cd.columns)==16) and (len(cd)==90)
+
+    def test_nodesD(self):
+        #check function nodesD
+        nd = self.r3.nodesD()
+        assert (len(nd.columns)==9) and (len(nd)==self.r3.tn)
+
+    def test_memF(self):
+        #check function memF
+        mf = self.r3.memF()
+        assert (len(mf)==self.r3.tm)
+
+    def test_sfbmd(self):
+        #check function sfbmd
+        sfbmd = self.r3.sfbmd(34)
+        # check if it is an empty go.Figure
+        if sfbmd.data == tuple():
+            status= True
+        else:
+            status= False
+        assert status==False
+
+    def test_def3D(self):
+        #check function def3D
+        def3D = self.r3.def3D()
+        # check if it is an empty go.Figure
+        if def3D.data == tuple():
+            status= True
+        else:
+            status= False
+        assert status==False
+
+    def test_defL(self):
+        #check function defL
+        defL = self.r3.defL(10)
+        # check if it is an empty go.Figure
+        if defL.data == tuple():
+            status= True
+        else:
+            status= False
+        assert status==False
+
+    def test_defG(self):
+        #check function defG
+        defG = self.r3.defG(32)
+        # check if it is an empty go.Figure
+        if defG.data == tuple():
+            status= True
+        else:
+            status= False
+        assert status==False
+
 class Test_RCFenv_3D_Frame:
     
     # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-    framegen=  pd.read_excel('test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
-    seismic_defination= pd.read_excel('test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
-    load_combo= pd.read_excel('test/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
+    framegen=  pd.read_excel('tests/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'framegen', header = 0, index_col=0)
+    seismic_defination= pd.read_excel('tests/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'Seismic_Defination', header = 0, index_col=0)
+    load_combo= pd.read_excel('tests/inputfile_RCFA_RCFenv_3D_Frame.xlsx', 'load_combinations', header = 0, index_col=0)
 
 
     # Creating RC frame object for analysis
-    r4= RCF(nodes_details = None,member_details= None,boundarycondition= None,framegen= framegen,seismic_def=seismic_defination, load_combo= load_combo,  autoflooring= True) 
+    r4= RCF(nodes_details=None, member_details= None,boundarycondition=None, framegen=framegen, seismic_def =seismic_defination, load_combo=load_combo,  autoflooring= True) 
     #Pre processing the model
     r4.preP()
+
 
     mem_list = [121,122,123,125,126,127,129,130,131,111,112,113,114,115,116,138,144,150,156,162,168,174,180,186,99,100,103,104,107,108,89,90,91,92,137,143,149,155,161,167,67,68,77,81,85,136,148,142]
     r4.changeFrame(member= mem_list, delete= True)
 
     r4.preP()
+    r6 = copy.copy(r4)
 
     r4.changeFrame(member= 'all',width= 400, depth= 400)
     r4.preP()
@@ -463,6 +568,7 @@ class Test_RCFenv_3D_Frame:
 
     r5.RCanalysis()
 
+    r4.RCanalysis()
 
     actual_reaction_node1= np.array([48.727, 803.606, 40.882, 118.841, 7.242, -152.389])
 
@@ -472,9 +578,33 @@ class Test_RCFenv_3D_Frame:
 
     actual_disp_node59= np.array([60.991, -7.505, 108.13, 0.004, 0.003, 0.003]) 
 
+    def test_changeFrame(self):
+        # Unit Test on changeFrame
+        tm= self.r4.tm
+        mem_list = [154,160,166]
+        self.r6.changeFrame(member= mem_list, delete= True)
+        self.r6.preP()
+        assert (self.r6.tm)==(tm-3)
+
+    def test_getTLC(self):
+        # Unit Test on Total objects
+        LCobj= self.r5.getTLC()
+        assert (len(self.r5.load_combo)==len(LCobj))
+
+    def test_getReact(self):
+        # Unit Test on Reactions
+        base_reactions= self.r5.getReact()
+        base_count= len(self.r4.reactions())
+        assert (len(base_reactions)==(base_count*len(self.r5.load_combo)))
+
+    def test_getNdis(self):
+        # Unit Test on Nodal displacement
+        nodal_displacements= self.r5.getNdis()
+        base_count= len(self.r4.reactions())
+        assert (len(nodal_displacements)==((self.r5.tn-base_count)*len(self.r5.load_combo)))
 
     def test_getReactmax(self):
-        # Unit Test on Reactions
+        # Unit Test on Max Reactions
         getReactmax= self.r5.getReactmax()
         getReactmax_node1= getReactmax.loc[1]
         getReactmax_node11= getReactmax.loc[11]
@@ -487,6 +617,46 @@ class Test_RCFenv_3D_Frame:
         relative_error_node11 = relative_error_node11.fillna(0)
 
         assert ((relative_error_node1<=1 ).all().all()== True) and ((relative_error_node11<=1 ).all().all()== True)
+
+    def test_getEndMF(self):
+        # Unit Test on End Nodal forces of members
+        emf = self.r5.getEndMF()
+        assert (len(emf)==(self.r5.tm*2*len(self.r5.load_combo)))
+
+    def test_getMFmax(self):
+        # Unit Test on Max End Nodal forces of members
+        end_member_forces_max = self.r5.getMFmax()
+        assert (len(end_member_forces_max)==(self.r5.tm*2*len(self.r5.load_combo)))
+
+    def test_getMFdsg(self):
+        # Unit Test on Max End Nodal forces of members
+        design_member_forces = self.r5.getMFdsg()
+        assert (len(design_member_forces)==(self.r5.tm*2))
+
+    def test_getLDef(self):
+        # Unit Test on local displacement of members
+        member_displacements_local = self.r5.getLDef()
+        assert (len(member_displacements_local)==(self.r5.tm*9))
+
+    def test_getGDef(self):
+        # Unit Test on global displacement of members
+        member_displacements_global = self.r5.getGDef()
+        assert (len(member_displacements_global)==(self.r5.tm*9))
+
+    def test_getLDefmax(self):
+        # Unit Test on max local displacement of members
+        member_displacements_local_max = self.r5.getLDefmax()
+        assert (len(member_displacements_local_max)==(self.r5.tm*2))
+
+    def test_getGDefmax(self):
+        # Unit Test on max global displacement of members
+        member_displacements_global_max = self.r5.getGDefmax()
+        assert (len(member_displacements_global_max)==(self.r5.tm*2))
+
+    def test_getLClist(self):
+        # Unit Test on retrive list of load combination in Dataframe
+        LC = self.r5.getLClist()
+        assert (len(LC)==(len(self.r5.load_combo)))
 
     def test_getNdismax(self):
         # Unit Test on global nodal displacement
