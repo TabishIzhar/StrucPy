@@ -154,10 +154,6 @@ r2= RCFenv(nodes_details,member_details,boundcond, load_combo= load_combo, autof
 r1.preP()
 r2.preP()
 
-# Changing all floor loads with Floor Finish load as 50kN/m2
-r1.changeFL(thickness= 0, LL=-25, FF=-50)
-r2.changeFL(thickness= 0, LL=-25, FF=-50)
-
 # Performing Analysis
 r1.RCanalysis()
 r2.RCanalysis()
@@ -166,6 +162,7 @@ r2.RCanalysis()
 ```
 Note: Install `StrucPy` before trying examples.
 ------------------------------------------------------------------------------------------------------------
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
