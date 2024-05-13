@@ -1,7 +1,7 @@
 # StrucPy
 [![Tests](https://github.com/TabishIzhar/StrucPy/actions/workflows/Tests.yml/badge.svg)](https://github.com/TabishIzhar/StrucPy/actions/workflows/Tests.yml) [![Documentation Status](https://readthedocs.org/projects/strucpy/badge/?version=latest)](https://strucpy.readthedocs.io/en/latest/?badge=latest) [![LGPLv2.1 License](https://img.shields.io/badge/License-LGPL%20v2.1-yellow.svg)](https://opensource.org/licenses/)
 
-**StrucPy** is a powerful python library for structural analysis of civil engineering structures. It gives complete control over the results of structure analysis. StrucPy is originally developed for the students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, for retrieving data for structural design and optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
+**StrucPy** is a powerful python library for structural analysis of civil engineering structures. It gives complete control over the results of structure analysis. StrucPy is originally developed for students and researchers working in field of civil engineering. It will be highly helpful for structural analysis, for retrieving data for structural design and optimization, visualizing the structural behavior, learning, application of machine learning in structural analysis, etc.
 
 ------------------------------------------------------------------------------------------------------------
 
