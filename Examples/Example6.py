@@ -5,15 +5,15 @@ from StrucPy.RCFA import RCF
 import pandas as pd
 
 # Importing Input Data from Excel File (Note: Change the Path as per the location of File)
-member_details= pd.read_excel('./InputFiles/Testfile6.xlsx', 'members', header = 0, index_col=0)
-nodes_details= pd.read_excel('./InputFiles/Testfile6.xlsx', 'nodes', header = 0, index_col=0)
-boundcond = pd.read_excel('./InputFiles/Testfile6.xlsx', 'boundary', header = 0, index_col=0)
-load_combo= pd.read_excel('./InputFiles/Testfile6.xlsx', 'load_combinations', header = 0, index_col=0)
-seismic_defination= pd.read_excel('./InputFiles/Testfile6.xlsx', 'Seismic_Defination', header = 0, index_col=0)
+member_details= pd.read_excel('../InputFiles/Example6.xlsx', 'members', header = 0, index_col=0)
+nodes_details= pd.read_excel('../InputFiles/Example6.xlsx', 'nodes', header = 0, index_col=0)
+boundcond = pd.read_excel('../InputFiles/Example6.xlsx', 'boundary', header = 0, index_col=0)
+load_combo= pd.read_excel('../InputFiles/Example6.xlsx', 'load_combinations', header = 0, index_col=0)
+seismic_defination= pd.read_excel('../InputFiles/Example6.xlsx', 'Seismic_Defination', header = 0, index_col=0)
 
 grade_concrete= 30              # If want same calculation but just different concrete grade, grade_concrete can be used.
 
-material_properties= pd.read_excel('./InputFiles/Testfile6.xlsx', 'Mproperties', header = 0, index_col=0)
+material_properties= pd.read_excel('../InputFiles/Example6.xlsx', 'Mproperties', header = 0, index_col=0)
 
 
 # Check "seismic_defination" for defining seismic defination

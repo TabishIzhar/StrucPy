@@ -5,10 +5,10 @@ import pandas as pd
 
 # Importing Input Data from Excel (Note: Change the Path os the file as per the location of "file" and "working directory")
 
-member_details = pd.read_excel('InputFiles/Example1.xlsx', 'members', header=0, index_col=0)
-nodes_details = pd.read_excel('InputFiles/Example1.xlsx', 'nodes', header=0, index_col=0)
-boundcond = pd.read_excel('InputFiles/Example1.xlsx', 'boundary', header=0, index_col=0)
-point_loads = pd.read_excel('InputFiles/Example1.xlsx', 'point_loads', header=0, index_col=0)
+member_details = pd.read_excel('../InputFiles/Example1.xlsx', 'members', header=0, index_col=0)
+nodes_details = pd.read_excel('../InputFiles/Example1.xlsx', 'nodes', header=0, index_col=0)
+boundcond = pd.read_excel('../InputFiles/Example1.xlsx', 'boundary', header=0, index_col=0)
+point_loads = pd.read_excel('../InputFiles/Example1.xlsx', 'point_loads', header=0, index_col=0)
 
 # Self weight is being ignored
 r1 = RCF(nodes_details, member_details, boundcond, point_loads=point_loads, self_weight=False)
