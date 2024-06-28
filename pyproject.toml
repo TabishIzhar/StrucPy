@@ -4,3 +4,35 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "StrucPy"
+version = "0.0.2"
+description = "Object Oriented Structural Analysis"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "GNU LGPLv2.1"}
+keywords = ["StrucPy", "Structural Analysis", "Civil Engineering", "Reinforced Concrete Frame"]
+authors = [
+  {email = "tizhar@iul.ac.in"},
+  {name = "Tabish Izhar"}
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python",
+]
+
+dependencies = [
+  "numpy==1.23.3",
+  "openpyxl==3.0.10",
+  "pandas==1.4.4",
+  "plotly==5.10.0",
+  "ray==2.6.1",
+]
+
+
+[project.urls]
+documentation = "https://strucpy.readthedocs.io/"
+repository = "https://github.com/TabishIzhar/StrucPy.git"
+Issues = "https://github.com/TabishIzhar/StrucPy/issues"

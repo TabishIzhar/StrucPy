@@ -11,9 +11,9 @@ sys.path.insert(0, os.path.abspath('../../src'))       # ../../ two directories 
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'StrucPy'
-copyright = '2023, Tabish Izhar'
+copyright = '2024, Tabish Izhar'
 author = 'Tabish Izhar'
-release = '0.0.1'
+release = '0.0.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

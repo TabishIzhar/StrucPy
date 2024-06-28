@@ -54,6 +54,8 @@ nosetests.xml
 .vscode/
 cover/
 OLD_setup.py
+OLD_setup.cfg
+OLD_requirements.txt
 
 # Translations
 *.mo
