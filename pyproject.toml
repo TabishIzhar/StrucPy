@@ -29,6 +29,7 @@ dependencies = [
   "pandas==1.4.4",
   "plotly==5.10.0",
   "ray==2.6.1",
+  "pytest==8.2.0"
 ]
 
 
