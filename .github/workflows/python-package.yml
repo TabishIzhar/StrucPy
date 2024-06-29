@@ -29,6 +29,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         python -m pip install numpy==1.23.3
+        python -m pip install pandas==1.4.4
+        python -m pip install plotly==5.10.0
+        python -m pip install ray==2.6.1
+        python -m pip install openpyxl==3.0.10
+
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
