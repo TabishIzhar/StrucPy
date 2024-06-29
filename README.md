@@ -43,10 +43,8 @@ Always create a virtual environment to install `StrucPy` and its dependencies.
     .\venv\Scripts\activate.bat
 ```
 
-4) Install every dependency using requirement.txt
-```
-    (.venv) $ pip install -r requirements.txt
-```
+4) Install every dependency
+
 ------------------------------------------------------------------------------------------------------------
 
 ## Modules 

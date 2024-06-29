@@ -59,11 +59,7 @@ Alternatively, you can build the package from the source by cloning the source f
 
    .\venv\Scripts\activate.bat
 
-4. Install every dependency using requirement.txt
-
-.. code-block:: python
-
-   pip install -r requirements.txt
+4. Install every dependency 
 
 
 
