@@ -143,7 +143,7 @@ seismic_defination= pd.read_excel('./InputFiles/Example7.xlsx', 'Seismic_Definat
 
 #Creating Structural object r1 for single load combination and r2 for multiple load combination
 
-r1= RCF(nodes_details,member_details,boundcond, load_combo= load_combo.iloc[0,:], autoflooring= True, seismic_def= seismic_defination)
+r1= RCF(nodes_details,member_details,boundcond, load_combo= load_combo.iloc[[0],:], autoflooring= True, seismic_def= seismic_defination)
 
 r2= RCFenv(nodes_details,member_details,boundcond, load_combo= load_combo, autoflooring= True, seismic_def= seismic_defination)
 
@@ -158,7 +158,9 @@ r2.RCanalysis()
 
 #Call methods as per the requirement
 ```
-Note: Install `StrucPy` before trying examples.
+Note:   
+- Install `StrucPy` before trying examples.
+- Ensure the directory of inputfile is correct
 ------------------------------------------------------------------------------------------------------------
 
 ## Contributing
